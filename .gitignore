@@ -1,1 +1,16 @@
-.DS_Store
+**/.DS_Store
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+.env
+*.pkl
+*.joblib
+data/processed/*
+!data/processed/.gitkeep
+models/*
+!models/.gitkeep
+reports/figures/*
+!reports/figures/.gitkeep
+reports/metrics.json
