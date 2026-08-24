@@ -1,0 +1,47 @@
+stage,model,method,metric,value,dataset,notes
+baseline_validation,Naive Lag-24,none,MAE,8.303585551330798,validation,Official validation split; not walk-forward; not test
+baseline_validation,Naive Lag-24,none,RMSE,11.927336319271115,validation,Official validation split
+baseline_validation,Naive Lag-24,none,R2,0.2813375496267535,validation,Official validation split
+baseline_validation,Naive Lag-24,none,sMAPE,20.065252877645747,validation,Official validation split
+baseline_validation,Naive Lag-24,none,bias,0.00729277566539935,validation,Official validation split
+baseline_validation,Mean Lag-24/48,none,MAE,8.822774714828897,validation,Official validation split
+baseline_validation,Mean Lag-24/48/168,none,MAE,9.078570975918884,validation,Official validation split
+baseline_validation,HistGradientBoosting,none,MAE,6.649754314543516,validation,Official validation split
+baseline_validation,Ridge,alpha=0.1_baseline_grid,MAE,5.486840378023054,validation,Baseline-stage Ridge grid; not the locked alpha
+baseline_validation,Ridge,alpha=0.1_baseline_grid,bias,-1.7177250095188477,validation,Underprediction on official validation
+walk_forward,Naive Lag-24,none,mean_MAE,7.351456021707257,train_validation_folds,4 expanding folds; test not loaded
+walk_forward,Ridge,alpha=0.01,mean_MAE,5.80425628047763,train_validation_folds,Best Ridge on coarse walk-forward grid
+walk_forward,HistGradientBoosting,none,mean_MAE,6.014534180649052,train_validation_folds,Did not beat Ridge
+walk_forward,LightGBM,none,mean_MAE,5.916945269217412,train_validation_folds,Did not beat Ridge
+walk_forward,XGBoost,none,mean_MAE,5.945953023720335,train_validation_folds,Did not beat Ridge
+ridge_tuning,Ridge,alpha=0.001,mean_MAE,5.796612197102819,train_validation_folds,BEST_ALPHA; locked
+ridge_tuning,Ridge,alpha=0.001,mean_bias,-1.8966296997593446,train_validation_folds,Development underprediction
+ridge_tuning,Ridge,alpha=0.003,mean_MAE,5.798230395904309,train_validation_folds,Tuning grid only
+ridge_tuning,Ridge,alpha=0.01,mean_MAE,5.80425628047763,train_validation_folds,Tuning grid only
+residual_correction,Ridge,alpha=0.001_no_correction,mean_MAE,5.796612197102819,train_validation_folds,Same as tuned Ridge
+residual_correction,Ridge,alpha=0.001_expanding_historical,mean_MAE,5.702475475367791,train_validation_folds,Selected residual correction; tau=720h
+residual_correction,Ridge,alpha=0.001_expanding_historical,mean_bias,-1.6292859496463814,train_validation_folds,High-price P75+ bias did not improve
+high_price_walk_forward,Ridge,METHOD_B,mean_MAE,5.49602246701913,train_validation_folds,Selected method; locked
+high_price_walk_forward,Ridge,METHOD_B,mae_std,0.45015985328269514,train_validation_folds,4 folds
+high_price_walk_forward,Ridge,METHOD_B,mean_bias,-0.9148158205400416,train_validation_folds,Development underprediction remains
+high_price_walk_forward,Ridge,METHOD_B,p75_bias,-5.895626285487727,train_validation_folds,High-price underprediction NOT fully solved
+high_price_walk_forward,Ridge,METHOD_B,p90_bias,-8.211141731867773,train_validation_folds,High-price underprediction NOT fully solved
+high_price_walk_forward,Ridge,METHOD_A,mean_MAE,5.529761134011018,train_validation_folds,Not selected
+high_price_walk_forward,Ridge,CURRENT_BEST,mean_MAE,5.702475475367791,train_validation_folds,Ridge+expanding addend before METHOD_B
+locked_test,Ridge,METHOD_B,MAE,4.329543532990026,test,Official locked holdout; not used for selection
+locked_test,Ridge,METHOD_B,RMSE,6.136182948044311,test,Official locked holdout
+locked_test,Ridge,METHOD_B,R2,0.6393557529228397,test,Official locked holdout
+locked_test,Ridge,METHOD_B,sMAPE,7.73942350908801,test,Official locked holdout
+locked_test,Ridge,METHOD_B,bias,2.1335666084526506,test,Sign flipped vs development (overprediction)
+locked_test,Ridge,METHOD_B,p75_bias,1.310873,test,Positive; do not call this solved underprediction
+locked_test,Ridge,METHOD_B,p90_bias,1.279965,test,Positive
+locked_test,Ridge,METHOD_B,p95_bias,0.677799,test,Positive
+locked_test,Naive Lag-24,none,MAE,6.045923954372624,test,Pre-specified baseline; MODEL_BEATS_NAIVE=TRUE
+locked_test,Naive Lag-24,none,RMSE,9.030375003266464,test,Pre-specified baseline
+locked_test,Naive Lag-24,none,R2,0.21892276348737794,test,Pre-specified baseline
+locked_test,Naive Lag-24,none,sMAPE,11.675683446297882,test,Pre-specified baseline
+locked_test,Naive Lag-24,none,bias,-0.0030760456273763786,test,Near-unbiased on this holdout
+forecast_24h,Ridge,METHOD_B_STRICT,production_ready,0,forecast_origin_D-1_noon,FALSE; y_pred left empty
+forecast_24h,Ridge,METHOD_B_STRICT,safe_features,106,forecast_origin_D-1_noon,Of 187 model columns
+forecast_24h,Ridge,METHOD_B_STRICT,unknown_features,6,forecast_origin_D-1_noon,Day-ahead forecast publish time unverified
+forecast_24h,Ridge,METHOD_B_STRICT,forbidden_features,75,forecast_origin_D-1_noon,lag_24 actuals not available at origin

@@ -1,0 +1,25 @@
+timestamp_utc,forecast_horizon,y_pred,forecast_origin,model,alpha,method,scenario,production_ready,blocking_reason
+2018-05-25T19:00:00+00:00,h+1,70.09415452508894,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-25T20:00:00+00:00,h+2,68.92610302152822,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-25T21:00:00+00:00,h+3,68.57705159428023,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-25T22:00:00+00:00,h+4,68.09783737742158,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-25T23:00:00+00:00,h+5,67.00720124046987,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T00:00:00+00:00,h+6,64.987182517025,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T01:00:00+00:00,h+7,65.60674534188148,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T02:00:00+00:00,h+8,64.27202594763465,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T03:00:00+00:00,h+9,65.20467339134734,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T04:00:00+00:00,h+10,64.45457703517489,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T05:00:00+00:00,h+11,62.697728796506404,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T06:00:00+00:00,h+12,63.244181631800366,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T07:00:00+00:00,h+13,63.56488026304688,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T08:00:00+00:00,h+14,63.06674211149829,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T09:00:00+00:00,h+15,61.2576259915584,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T10:00:00+00:00,h+16,60.41829571893985,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T11:00:00+00:00,h+17,58.7332647823245,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T12:00:00+00:00,h+18,57.33721702918145,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T13:00:00+00:00,h+19,56.00544432371411,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T14:00:00+00:00,h+20,54.22805668047854,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T15:00:00+00:00,h+21,55.248968658365975,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T16:00:00+00:00,h+22,58.267538716464394,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T17:00:00+00:00,h+23,61.27551984445319,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin
+2018-05-26T18:00:00+00:00,h+24,62.18659728699845,2018-05-25T18:00:00+00:00,Ridge,0.001,METHOD_B,DATASET_ASSUMED,False,forecast publication time not verified; not a DAM-noon origin

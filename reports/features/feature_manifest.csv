@@ -1,0 +1,185 @@
+feature_name,source_column,feature_group,lag,transformation,availability,leakage_status,description
+hour,timestamp_utc,calendar,0,calendar_extract_europe_madrid,known_in_advance,SAFE,Local hour in Europe/Madrid (DST-aware)
+day_of_week,timestamp_utc,calendar,0,calendar_extract_europe_madrid,known_in_advance,SAFE,"Monday=0 ... Sunday=6, Europe/Madrid"
+day_of_month,timestamp_utc,calendar,0,calendar_extract_europe_madrid,known_in_advance,SAFE,"Calendar day of month, Europe/Madrid"
+month,timestamp_utc,calendar,0,calendar_extract_europe_madrid,known_in_advance,SAFE,"Month 1-12, Europe/Madrid"
+quarter,timestamp_utc,calendar,0,calendar_extract_europe_madrid,known_in_advance,SAFE,"Quarter 1-4, Europe/Madrid"
+day_of_year,timestamp_utc,calendar,0,calendar_extract_europe_madrid,known_in_advance,SAFE,"Day of year 1-366, Europe/Madrid"
+week_of_year,timestamp_utc,calendar,0,calendar_extract_europe_madrid,known_in_advance,SAFE,"ISO week number, Europe/Madrid"
+is_weekend,timestamp_utc,calendar,0,calendar_extract_europe_madrid,known_in_advance,SAFE,1 if Saturday or Sunday local
+is_month_start,timestamp_utc,calendar,0,calendar_extract_europe_madrid,known_in_advance,SAFE,1 if first local calendar day of month
+is_month_end,timestamp_utc,calendar,0,calendar_extract_europe_madrid,known_in_advance,SAFE,1 if last local calendar day of month
+is_year_start,timestamp_utc,calendar,0,calendar_extract_europe_madrid,known_in_advance,SAFE,1 if 1 January local
+is_year_end,timestamp_utc,calendar,0,calendar_extract_europe_madrid,known_in_advance,SAFE,1 if 31 December local
+hour_sin,timestamp_utc,calendar,0,cyclical_encoding,known_in_advance,SAFE,sin(2π hour/24)
+hour_cos,timestamp_utc,calendar,0,cyclical_encoding,known_in_advance,SAFE,cos(2π hour/24)
+dow_sin,timestamp_utc,calendar,0,cyclical_encoding,known_in_advance,SAFE,sin(2π day_of_week/7)
+dow_cos,timestamp_utc,calendar,0,cyclical_encoding,known_in_advance,SAFE,cos(2π day_of_week/7)
+month_sin,timestamp_utc,calendar,0,cyclical_encoding,known_in_advance,SAFE,sin(2π month/12)
+month_cos,timestamp_utc,calendar,0,cyclical_encoding,known_in_advance,SAFE,cos(2π month/12)
+day_of_year_sin,timestamp_utc,calendar,0,cyclical_encoding,known_in_advance,SAFE,sin(2π day_of_year/365.25)
+day_of_year_cos,timestamp_utc,calendar,0,cyclical_encoding,known_in_advance,SAFE,cos(2π day_of_year/365.25)
+total_load_forecast,total load forecast,day_ahead_forecast,0,identity,named_day_ahead_forecast_for_t,SAFE,Day-ahead national load forecast for hour t
+forecast_solar_day_ahead,forecast solar day ahead,day_ahead_forecast,0,identity,named_day_ahead_forecast_for_t,SAFE,Day-ahead solar forecast for hour t
+forecast_wind_onshore_day_ahead,forecast wind onshore day ahead,day_ahead_forecast,0,identity,named_day_ahead_forecast_for_t,SAFE,Day-ahead onshore wind forecast for hour t
+renewable_forecast_total,forecast solar day ahead + forecast wind onshore day ahead,day_ahead_forecast,0,sum,named_day_ahead_forecast_for_t,SAFE,solar_forecast(t) + wind_forecast(t); no actuals
+forecast_wind_share_of_load,forecast wind onshore day ahead / total load forecast,day_ahead_forecast,0,ratio_zero_safe,named_day_ahead_forecast_for_t,SAFE,wind_forecast(t) / load_forecast(t); NaN if load_forecast<=0
+forecast_solar_share_of_load,forecast solar day ahead / total load forecast,day_ahead_forecast,0,ratio_zero_safe,named_day_ahead_forecast_for_t,SAFE,solar_forecast(t) / load_forecast(t); NaN if load_forecast<=0
+price_day_ahead_lag_24,price day ahead,historical_target,24,shift(+24),prior_auction_only,SAFE,"price day ahead at t-24; previous auction, not same delivery day"
+price_day_ahead_lag_48,price day ahead,historical_target,48,shift(+48),prior_auction_only,SAFE,"price day ahead at t-48; previous auction, not same delivery day"
+price_day_ahead_lag_168,price day ahead,historical_target,168,shift(+168),prior_auction_only,SAFE,"price day ahead at t-168; previous auction, not same delivery day"
+price_mean_lag24_lag48,"price_day_ahead_lag_24, price_day_ahead_lag_48",historical_target,24+48,elementwise_mean_of_allowed_lags,prior_auction_only,SAFE,Mean of the two allowed target lags only; not a rolling window
+price_mean_lag24_lag48_lag168,"price_day_ahead_lag_24, price_day_ahead_lag_48, price_day_ahead_lag_168",historical_target,24+48+168,elementwise_mean_of_allowed_lags,prior_auction_only,SAFE,"Mean of t-24, t-48, t-168 target lags"
+price_std_lag24_lag48_lag168,"price_day_ahead_lag_24, price_day_ahead_lag_48, price_day_ahead_lag_168",historical_target,24+48+168,elementwise_std_ddof0_of_allowed_lags,prior_auction_only,SAFE,Population std of the three allowed target lags
+price_min_lag24_lag48_lag168,"price_day_ahead_lag_24, price_day_ahead_lag_48, price_day_ahead_lag_168",historical_target,24+48+168,elementwise_min_of_allowed_lags,prior_auction_only,SAFE,Min of the three allowed target lags
+price_max_lag24_lag48_lag168,"price_day_ahead_lag_24, price_day_ahead_lag_48, price_day_ahead_lag_168",historical_target,24+48+168,elementwise_max_of_allowed_lags,prior_auction_only,SAFE,Max of the three allowed target lags
+total_load_actual_lag_24,total load actual,historical_load,24,shift(+24),historical_actual_only,SAFE,Realized load at t-24; current load actual is not used
+total_load_actual_lag_48,total load actual,historical_load,48,shift(+48),historical_actual_only,SAFE,Realized load at t-48; current load actual is not used
+total_load_actual_lag_168,total load actual,historical_load,168,shift(+168),historical_actual_only,SAFE,Realized load at t-168; current load actual is not used
+load_forecast_error_lag_24,total load actual - total load forecast,historical_load,24,shift(+24) of (actual-forecast) at same historical hour,historical_actual_and_forecast,SAFE,load_actual(t-24) - load_forecast(t-24); both timestamps are historical
+generation_biomass_lag_24,generation biomass,historical_generation,24,shift(+24),historical_actual_only,SAFE,generation biomass at t-24; same-hour generation is excluded
+generation_biomass_lag_168,generation biomass,historical_generation,168,shift(+168),historical_actual_only,SAFE,generation biomass at t-168; same-hour generation is excluded
+generation_fossil_brown_coal_lignite_lag_24,generation fossil brown coal/lignite,historical_generation,24,shift(+24),historical_actual_only,SAFE,generation fossil brown coal/lignite at t-24; same-hour generation is excluded
+generation_fossil_brown_coal_lignite_lag_168,generation fossil brown coal/lignite,historical_generation,168,shift(+168),historical_actual_only,SAFE,generation fossil brown coal/lignite at t-168; same-hour generation is excluded
+generation_fossil_gas_lag_24,generation fossil gas,historical_generation,24,shift(+24),historical_actual_only,SAFE,generation fossil gas at t-24; same-hour generation is excluded
+generation_fossil_gas_lag_168,generation fossil gas,historical_generation,168,shift(+168),historical_actual_only,SAFE,generation fossil gas at t-168; same-hour generation is excluded
+generation_fossil_hard_coal_lag_24,generation fossil hard coal,historical_generation,24,shift(+24),historical_actual_only,SAFE,generation fossil hard coal at t-24; same-hour generation is excluded
+generation_fossil_hard_coal_lag_168,generation fossil hard coal,historical_generation,168,shift(+168),historical_actual_only,SAFE,generation fossil hard coal at t-168; same-hour generation is excluded
+generation_fossil_oil_lag_24,generation fossil oil,historical_generation,24,shift(+24),historical_actual_only,SAFE,generation fossil oil at t-24; same-hour generation is excluded
+generation_fossil_oil_lag_168,generation fossil oil,historical_generation,168,shift(+168),historical_actual_only,SAFE,generation fossil oil at t-168; same-hour generation is excluded
+generation_hydro_pumped_storage_consumption_lag_24,generation hydro pumped storage consumption,historical_generation,24,shift(+24),historical_actual_only,SAFE,generation hydro pumped storage consumption at t-24; same-hour generation is excluded
+generation_hydro_pumped_storage_consumption_lag_168,generation hydro pumped storage consumption,historical_generation,168,shift(+168),historical_actual_only,SAFE,generation hydro pumped storage consumption at t-168; same-hour generation is excluded
+generation_hydro_run_of_river_and_poundage_lag_24,generation hydro run-of-river and poundage,historical_generation,24,shift(+24),historical_actual_only,SAFE,generation hydro run-of-river and poundage at t-24; same-hour generation is excluded
+generation_hydro_run_of_river_and_poundage_lag_168,generation hydro run-of-river and poundage,historical_generation,168,shift(+168),historical_actual_only,SAFE,generation hydro run-of-river and poundage at t-168; same-hour generation is excluded
+generation_hydro_water_reservoir_lag_24,generation hydro water reservoir,historical_generation,24,shift(+24),historical_actual_only,SAFE,generation hydro water reservoir at t-24; same-hour generation is excluded
+generation_hydro_water_reservoir_lag_168,generation hydro water reservoir,historical_generation,168,shift(+168),historical_actual_only,SAFE,generation hydro water reservoir at t-168; same-hour generation is excluded
+generation_nuclear_lag_24,generation nuclear,historical_generation,24,shift(+24),historical_actual_only,SAFE,generation nuclear at t-24; same-hour generation is excluded
+generation_nuclear_lag_168,generation nuclear,historical_generation,168,shift(+168),historical_actual_only,SAFE,generation nuclear at t-168; same-hour generation is excluded
+generation_other_lag_24,generation other,historical_generation,24,shift(+24),historical_actual_only,SAFE,generation other at t-24; same-hour generation is excluded
+generation_other_lag_168,generation other,historical_generation,168,shift(+168),historical_actual_only,SAFE,generation other at t-168; same-hour generation is excluded
+generation_other_renewable_lag_24,generation other renewable,historical_generation,24,shift(+24),historical_actual_only,SAFE,generation other renewable at t-24; same-hour generation is excluded
+generation_other_renewable_lag_168,generation other renewable,historical_generation,168,shift(+168),historical_actual_only,SAFE,generation other renewable at t-168; same-hour generation is excluded
+generation_solar_lag_24,generation solar,historical_generation,24,shift(+24),historical_actual_only,SAFE,generation solar at t-24; same-hour generation is excluded
+generation_solar_lag_168,generation solar,historical_generation,168,shift(+168),historical_actual_only,SAFE,generation solar at t-168; same-hour generation is excluded
+generation_waste_lag_24,generation waste,historical_generation,24,shift(+24),historical_actual_only,SAFE,generation waste at t-24; same-hour generation is excluded
+generation_waste_lag_168,generation waste,historical_generation,168,shift(+168),historical_actual_only,SAFE,generation waste at t-168; same-hour generation is excluded
+generation_wind_onshore_lag_24,generation wind onshore,historical_generation,24,shift(+24),historical_actual_only,SAFE,generation wind onshore at t-24; same-hour generation is excluded
+generation_wind_onshore_lag_168,generation wind onshore,historical_generation,168,shift(+168),historical_actual_only,SAFE,generation wind onshore at t-168; same-hour generation is excluded
+total_generation_lag_24,generation biomass + generation fossil brown coal/lignite + generation fossil gas + generation fossil hard coal + generation fossil oil + generation hydro run-of-river and poundage + generation hydro water reservoir + generation nuclear + generation other + generation other renewable + generation solar + generation waste + generation wind onshore,historical_generation,24,sum_then_shift(+24),historical_actual_only,SAFE,"Sum of documented production columns at s, then s=t-k. Excludes pumped-storage consumption and zero-only columns."
+renewable_generation_lag_24,generation biomass + generation hydro run-of-river and poundage + generation hydro water reservoir + generation other renewable + generation solar + generation wind onshore,historical_generation,24,sum_then_shift(+24),historical_actual_only,SAFE,Renewable = biomass + hydro ror + hydro reservoir + other renewable + solar + wind onshore. Waste and nuclear excluded.
+fossil_generation_lag_24,generation fossil brown coal/lignite + generation fossil gas + generation fossil hard coal + generation fossil oil,historical_generation,24,sum_then_shift(+24),historical_actual_only,SAFE,Fossil = lignite + fossil gas + hard coal + fossil oil. Zero-only fossil types omitted.
+renewable_share_lag_24,renewable_generation / total_generation,historical_generation,24,ratio_then_shift(+24),historical_actual_only,SAFE,renewable(s)/total(s) at historical s=t-k; NaN if total<=0. Aggregated before lag.
+total_generation_lag_168,generation biomass + generation fossil brown coal/lignite + generation fossil gas + generation fossil hard coal + generation fossil oil + generation hydro run-of-river and poundage + generation hydro water reservoir + generation nuclear + generation other + generation other renewable + generation solar + generation waste + generation wind onshore,historical_generation,168,sum_then_shift(+168),historical_actual_only,SAFE,"Sum of documented production columns at s, then s=t-k. Excludes pumped-storage consumption and zero-only columns."
+renewable_generation_lag_168,generation biomass + generation hydro run-of-river and poundage + generation hydro water reservoir + generation other renewable + generation solar + generation wind onshore,historical_generation,168,sum_then_shift(+168),historical_actual_only,SAFE,Renewable = biomass + hydro ror + hydro reservoir + other renewable + solar + wind onshore. Waste and nuclear excluded.
+fossil_generation_lag_168,generation fossil brown coal/lignite + generation fossil gas + generation fossil hard coal + generation fossil oil,historical_generation,168,sum_then_shift(+168),historical_actual_only,SAFE,Fossil = lignite + fossil gas + hard coal + fossil oil. Zero-only fossil types omitted.
+renewable_share_lag_168,renewable_generation / total_generation,historical_generation,168,ratio_then_shift(+168),historical_actual_only,SAFE,renewable(s)/total(s) at historical s=t-k; NaN if total<=0. Aggregated before lag.
+wind_deg_sin_barcelona_lag_24,wind_deg_Barcelona,historical_weather,24,sin(deg2rad(wind_deg)) then shift(+24),historical_observation_only,SAFE,Barcelona wind direction sine at t-24; direction is not averaged in degrees
+wind_deg_cos_barcelona_lag_24,wind_deg_Barcelona,historical_weather,24,cos(deg2rad(wind_deg)) then shift(+24),historical_observation_only,SAFE,Barcelona wind direction cosine at t-24
+wind_deg_sin_barcelona_lag_168,wind_deg_Barcelona,historical_weather,168,sin(deg2rad(wind_deg)) then shift(+168),historical_observation_only,SAFE,Barcelona wind direction sine at t-168; direction is not averaged in degrees
+wind_deg_cos_barcelona_lag_168,wind_deg_Barcelona,historical_weather,168,cos(deg2rad(wind_deg)) then shift(+168),historical_observation_only,SAFE,Barcelona wind direction cosine at t-168
+temp_barcelona_lag_24,temp_Barcelona,historical_weather,24,shift(+24),historical_observation_only,SAFE,Barcelona temp observation at t-24; same-hour weather excluded
+temp_barcelona_lag_168,temp_Barcelona,historical_weather,168,shift(+168),historical_observation_only,SAFE,Barcelona temp observation at t-168; same-hour weather excluded
+humidity_barcelona_lag_24,humidity_Barcelona,historical_weather,24,shift(+24),historical_observation_only,SAFE,Barcelona humidity observation at t-24; same-hour weather excluded
+humidity_barcelona_lag_168,humidity_Barcelona,historical_weather,168,shift(+168),historical_observation_only,SAFE,Barcelona humidity observation at t-168; same-hour weather excluded
+pressure_barcelona_lag_24,pressure_Barcelona,historical_weather,24,shift(+24),historical_observation_only,SAFE,Barcelona pressure observation at t-24; same-hour weather excluded
+pressure_barcelona_lag_168,pressure_Barcelona,historical_weather,168,shift(+168),historical_observation_only,SAFE,Barcelona pressure observation at t-168; same-hour weather excluded
+wind_speed_barcelona_lag_24,wind_speed_Barcelona,historical_weather,24,shift(+24),historical_observation_only,SAFE,Barcelona wind_speed observation at t-24; same-hour weather excluded
+wind_speed_barcelona_lag_168,wind_speed_Barcelona,historical_weather,168,shift(+168),historical_observation_only,SAFE,Barcelona wind_speed observation at t-168; same-hour weather excluded
+clouds_all_barcelona_lag_24,clouds_all_Barcelona,historical_weather,24,shift(+24),historical_observation_only,SAFE,Barcelona clouds_all observation at t-24; same-hour weather excluded
+clouds_all_barcelona_lag_168,clouds_all_Barcelona,historical_weather,168,shift(+168),historical_observation_only,SAFE,Barcelona clouds_all observation at t-168; same-hour weather excluded
+rain_1h_barcelona_lag_24,rain_1h_Barcelona,historical_weather,24,shift(+24),historical_observation_only,SAFE,Barcelona rain_1h observation at t-24; same-hour weather excluded
+rain_1h_barcelona_lag_168,rain_1h_Barcelona,historical_weather,168,shift(+168),historical_observation_only,SAFE,Barcelona rain_1h observation at t-168; same-hour weather excluded
+rain_3h_barcelona_lag_24,rain_3h_Barcelona,historical_weather,24,shift(+24),historical_observation_only,SAFE,Barcelona rain_3h observation at t-24; same-hour weather excluded
+rain_3h_barcelona_lag_168,rain_3h_Barcelona,historical_weather,168,shift(+168),historical_observation_only,SAFE,Barcelona rain_3h observation at t-168; same-hour weather excluded
+snow_3h_barcelona_lag_24,snow_3h_Barcelona,historical_weather,24,shift(+24),historical_observation_only,SAFE,Barcelona snow_3h observation at t-24; same-hour weather excluded
+snow_3h_barcelona_lag_168,snow_3h_Barcelona,historical_weather,168,shift(+168),historical_observation_only,SAFE,Barcelona snow_3h observation at t-168; same-hour weather excluded
+wind_deg_sin_bilbao_lag_24,wind_deg_Bilbao,historical_weather,24,sin(deg2rad(wind_deg)) then shift(+24),historical_observation_only,SAFE,Bilbao wind direction sine at t-24; direction is not averaged in degrees
+wind_deg_cos_bilbao_lag_24,wind_deg_Bilbao,historical_weather,24,cos(deg2rad(wind_deg)) then shift(+24),historical_observation_only,SAFE,Bilbao wind direction cosine at t-24
+wind_deg_sin_bilbao_lag_168,wind_deg_Bilbao,historical_weather,168,sin(deg2rad(wind_deg)) then shift(+168),historical_observation_only,SAFE,Bilbao wind direction sine at t-168; direction is not averaged in degrees
+wind_deg_cos_bilbao_lag_168,wind_deg_Bilbao,historical_weather,168,cos(deg2rad(wind_deg)) then shift(+168),historical_observation_only,SAFE,Bilbao wind direction cosine at t-168
+temp_bilbao_lag_24,temp_Bilbao,historical_weather,24,shift(+24),historical_observation_only,SAFE,Bilbao temp observation at t-24; same-hour weather excluded
+temp_bilbao_lag_168,temp_Bilbao,historical_weather,168,shift(+168),historical_observation_only,SAFE,Bilbao temp observation at t-168; same-hour weather excluded
+humidity_bilbao_lag_24,humidity_Bilbao,historical_weather,24,shift(+24),historical_observation_only,SAFE,Bilbao humidity observation at t-24; same-hour weather excluded
+humidity_bilbao_lag_168,humidity_Bilbao,historical_weather,168,shift(+168),historical_observation_only,SAFE,Bilbao humidity observation at t-168; same-hour weather excluded
+pressure_bilbao_lag_24,pressure_Bilbao,historical_weather,24,shift(+24),historical_observation_only,SAFE,Bilbao pressure observation at t-24; same-hour weather excluded
+pressure_bilbao_lag_168,pressure_Bilbao,historical_weather,168,shift(+168),historical_observation_only,SAFE,Bilbao pressure observation at t-168; same-hour weather excluded
+wind_speed_bilbao_lag_24,wind_speed_Bilbao,historical_weather,24,shift(+24),historical_observation_only,SAFE,Bilbao wind_speed observation at t-24; same-hour weather excluded
+wind_speed_bilbao_lag_168,wind_speed_Bilbao,historical_weather,168,shift(+168),historical_observation_only,SAFE,Bilbao wind_speed observation at t-168; same-hour weather excluded
+clouds_all_bilbao_lag_24,clouds_all_Bilbao,historical_weather,24,shift(+24),historical_observation_only,SAFE,Bilbao clouds_all observation at t-24; same-hour weather excluded
+clouds_all_bilbao_lag_168,clouds_all_Bilbao,historical_weather,168,shift(+168),historical_observation_only,SAFE,Bilbao clouds_all observation at t-168; same-hour weather excluded
+rain_1h_bilbao_lag_24,rain_1h_Bilbao,historical_weather,24,shift(+24),historical_observation_only,SAFE,Bilbao rain_1h observation at t-24; same-hour weather excluded
+rain_1h_bilbao_lag_168,rain_1h_Bilbao,historical_weather,168,shift(+168),historical_observation_only,SAFE,Bilbao rain_1h observation at t-168; same-hour weather excluded
+rain_3h_bilbao_lag_24,rain_3h_Bilbao,historical_weather,24,shift(+24),historical_observation_only,SAFE,Bilbao rain_3h observation at t-24; same-hour weather excluded
+rain_3h_bilbao_lag_168,rain_3h_Bilbao,historical_weather,168,shift(+168),historical_observation_only,SAFE,Bilbao rain_3h observation at t-168; same-hour weather excluded
+snow_3h_bilbao_lag_24,snow_3h_Bilbao,historical_weather,24,shift(+24),historical_observation_only,SAFE,Bilbao snow_3h observation at t-24; same-hour weather excluded
+snow_3h_bilbao_lag_168,snow_3h_Bilbao,historical_weather,168,shift(+168),historical_observation_only,SAFE,Bilbao snow_3h observation at t-168; same-hour weather excluded
+wind_deg_sin_madrid_lag_24,wind_deg_Madrid,historical_weather,24,sin(deg2rad(wind_deg)) then shift(+24),historical_observation_only,SAFE,Madrid wind direction sine at t-24; direction is not averaged in degrees
+wind_deg_cos_madrid_lag_24,wind_deg_Madrid,historical_weather,24,cos(deg2rad(wind_deg)) then shift(+24),historical_observation_only,SAFE,Madrid wind direction cosine at t-24
+wind_deg_sin_madrid_lag_168,wind_deg_Madrid,historical_weather,168,sin(deg2rad(wind_deg)) then shift(+168),historical_observation_only,SAFE,Madrid wind direction sine at t-168; direction is not averaged in degrees
+wind_deg_cos_madrid_lag_168,wind_deg_Madrid,historical_weather,168,cos(deg2rad(wind_deg)) then shift(+168),historical_observation_only,SAFE,Madrid wind direction cosine at t-168
+temp_madrid_lag_24,temp_Madrid,historical_weather,24,shift(+24),historical_observation_only,SAFE,Madrid temp observation at t-24; same-hour weather excluded
+temp_madrid_lag_168,temp_Madrid,historical_weather,168,shift(+168),historical_observation_only,SAFE,Madrid temp observation at t-168; same-hour weather excluded
+humidity_madrid_lag_24,humidity_Madrid,historical_weather,24,shift(+24),historical_observation_only,SAFE,Madrid humidity observation at t-24; same-hour weather excluded
+humidity_madrid_lag_168,humidity_Madrid,historical_weather,168,shift(+168),historical_observation_only,SAFE,Madrid humidity observation at t-168; same-hour weather excluded
+pressure_madrid_lag_24,pressure_Madrid,historical_weather,24,shift(+24),historical_observation_only,SAFE,Madrid pressure observation at t-24; same-hour weather excluded
+pressure_madrid_lag_168,pressure_Madrid,historical_weather,168,shift(+168),historical_observation_only,SAFE,Madrid pressure observation at t-168; same-hour weather excluded
+wind_speed_madrid_lag_24,wind_speed_Madrid,historical_weather,24,shift(+24),historical_observation_only,SAFE,Madrid wind_speed observation at t-24; same-hour weather excluded
+wind_speed_madrid_lag_168,wind_speed_Madrid,historical_weather,168,shift(+168),historical_observation_only,SAFE,Madrid wind_speed observation at t-168; same-hour weather excluded
+clouds_all_madrid_lag_24,clouds_all_Madrid,historical_weather,24,shift(+24),historical_observation_only,SAFE,Madrid clouds_all observation at t-24; same-hour weather excluded
+clouds_all_madrid_lag_168,clouds_all_Madrid,historical_weather,168,shift(+168),historical_observation_only,SAFE,Madrid clouds_all observation at t-168; same-hour weather excluded
+rain_1h_madrid_lag_24,rain_1h_Madrid,historical_weather,24,shift(+24),historical_observation_only,SAFE,Madrid rain_1h observation at t-24; same-hour weather excluded
+rain_1h_madrid_lag_168,rain_1h_Madrid,historical_weather,168,shift(+168),historical_observation_only,SAFE,Madrid rain_1h observation at t-168; same-hour weather excluded
+rain_3h_madrid_lag_24,rain_3h_Madrid,historical_weather,24,shift(+24),historical_observation_only,SAFE,Madrid rain_3h observation at t-24; same-hour weather excluded
+rain_3h_madrid_lag_168,rain_3h_Madrid,historical_weather,168,shift(+168),historical_observation_only,SAFE,Madrid rain_3h observation at t-168; same-hour weather excluded
+snow_3h_madrid_lag_24,snow_3h_Madrid,historical_weather,24,shift(+24),historical_observation_only,SAFE,Madrid snow_3h observation at t-24; same-hour weather excluded
+snow_3h_madrid_lag_168,snow_3h_Madrid,historical_weather,168,shift(+168),historical_observation_only,SAFE,Madrid snow_3h observation at t-168; same-hour weather excluded
+wind_deg_sin_seville_lag_24,wind_deg_Seville,historical_weather,24,sin(deg2rad(wind_deg)) then shift(+24),historical_observation_only,SAFE,Seville wind direction sine at t-24; direction is not averaged in degrees
+wind_deg_cos_seville_lag_24,wind_deg_Seville,historical_weather,24,cos(deg2rad(wind_deg)) then shift(+24),historical_observation_only,SAFE,Seville wind direction cosine at t-24
+wind_deg_sin_seville_lag_168,wind_deg_Seville,historical_weather,168,sin(deg2rad(wind_deg)) then shift(+168),historical_observation_only,SAFE,Seville wind direction sine at t-168; direction is not averaged in degrees
+wind_deg_cos_seville_lag_168,wind_deg_Seville,historical_weather,168,cos(deg2rad(wind_deg)) then shift(+168),historical_observation_only,SAFE,Seville wind direction cosine at t-168
+temp_seville_lag_24,temp_Seville,historical_weather,24,shift(+24),historical_observation_only,SAFE,Seville temp observation at t-24; same-hour weather excluded
+temp_seville_lag_168,temp_Seville,historical_weather,168,shift(+168),historical_observation_only,SAFE,Seville temp observation at t-168; same-hour weather excluded
+humidity_seville_lag_24,humidity_Seville,historical_weather,24,shift(+24),historical_observation_only,SAFE,Seville humidity observation at t-24; same-hour weather excluded
+humidity_seville_lag_168,humidity_Seville,historical_weather,168,shift(+168),historical_observation_only,SAFE,Seville humidity observation at t-168; same-hour weather excluded
+pressure_seville_lag_24,pressure_Seville,historical_weather,24,shift(+24),historical_observation_only,SAFE,Seville pressure observation at t-24; same-hour weather excluded
+pressure_seville_lag_168,pressure_Seville,historical_weather,168,shift(+168),historical_observation_only,SAFE,Seville pressure observation at t-168; same-hour weather excluded
+wind_speed_seville_lag_24,wind_speed_Seville,historical_weather,24,shift(+24),historical_observation_only,SAFE,Seville wind_speed observation at t-24; same-hour weather excluded
+wind_speed_seville_lag_168,wind_speed_Seville,historical_weather,168,shift(+168),historical_observation_only,SAFE,Seville wind_speed observation at t-168; same-hour weather excluded
+clouds_all_seville_lag_24,clouds_all_Seville,historical_weather,24,shift(+24),historical_observation_only,SAFE,Seville clouds_all observation at t-24; same-hour weather excluded
+clouds_all_seville_lag_168,clouds_all_Seville,historical_weather,168,shift(+168),historical_observation_only,SAFE,Seville clouds_all observation at t-168; same-hour weather excluded
+rain_1h_seville_lag_24,rain_1h_Seville,historical_weather,24,shift(+24),historical_observation_only,SAFE,Seville rain_1h observation at t-24; same-hour weather excluded
+rain_1h_seville_lag_168,rain_1h_Seville,historical_weather,168,shift(+168),historical_observation_only,SAFE,Seville rain_1h observation at t-168; same-hour weather excluded
+rain_3h_seville_lag_24,rain_3h_Seville,historical_weather,24,shift(+24),historical_observation_only,SAFE,Seville rain_3h observation at t-24; same-hour weather excluded
+rain_3h_seville_lag_168,rain_3h_Seville,historical_weather,168,shift(+168),historical_observation_only,SAFE,Seville rain_3h observation at t-168; same-hour weather excluded
+snow_3h_seville_lag_24,snow_3h_Seville,historical_weather,24,shift(+24),historical_observation_only,SAFE,Seville snow_3h observation at t-24; same-hour weather excluded
+snow_3h_seville_lag_168,snow_3h_Seville,historical_weather,168,shift(+168),historical_observation_only,SAFE,Seville snow_3h observation at t-168; same-hour weather excluded
+wind_deg_sin_valencia_lag_24,wind_deg_Valencia,historical_weather,24,sin(deg2rad(wind_deg)) then shift(+24),historical_observation_only,SAFE,Valencia wind direction sine at t-24; direction is not averaged in degrees
+wind_deg_cos_valencia_lag_24,wind_deg_Valencia,historical_weather,24,cos(deg2rad(wind_deg)) then shift(+24),historical_observation_only,SAFE,Valencia wind direction cosine at t-24
+wind_deg_sin_valencia_lag_168,wind_deg_Valencia,historical_weather,168,sin(deg2rad(wind_deg)) then shift(+168),historical_observation_only,SAFE,Valencia wind direction sine at t-168; direction is not averaged in degrees
+wind_deg_cos_valencia_lag_168,wind_deg_Valencia,historical_weather,168,cos(deg2rad(wind_deg)) then shift(+168),historical_observation_only,SAFE,Valencia wind direction cosine at t-168
+temp_valencia_lag_24,temp_Valencia,historical_weather,24,shift(+24),historical_observation_only,SAFE,Valencia temp observation at t-24; same-hour weather excluded
+temp_valencia_lag_168,temp_Valencia,historical_weather,168,shift(+168),historical_observation_only,SAFE,Valencia temp observation at t-168; same-hour weather excluded
+humidity_valencia_lag_24,humidity_Valencia,historical_weather,24,shift(+24),historical_observation_only,SAFE,Valencia humidity observation at t-24; same-hour weather excluded
+humidity_valencia_lag_168,humidity_Valencia,historical_weather,168,shift(+168),historical_observation_only,SAFE,Valencia humidity observation at t-168; same-hour weather excluded
+pressure_valencia_lag_24,pressure_Valencia,historical_weather,24,shift(+24),historical_observation_only,SAFE,Valencia pressure observation at t-24; same-hour weather excluded
+pressure_valencia_lag_168,pressure_Valencia,historical_weather,168,shift(+168),historical_observation_only,SAFE,Valencia pressure observation at t-168; same-hour weather excluded
+wind_speed_valencia_lag_24,wind_speed_Valencia,historical_weather,24,shift(+24),historical_observation_only,SAFE,Valencia wind_speed observation at t-24; same-hour weather excluded
+wind_speed_valencia_lag_168,wind_speed_Valencia,historical_weather,168,shift(+168),historical_observation_only,SAFE,Valencia wind_speed observation at t-168; same-hour weather excluded
+clouds_all_valencia_lag_24,clouds_all_Valencia,historical_weather,24,shift(+24),historical_observation_only,SAFE,Valencia clouds_all observation at t-24; same-hour weather excluded
+clouds_all_valencia_lag_168,clouds_all_Valencia,historical_weather,168,shift(+168),historical_observation_only,SAFE,Valencia clouds_all observation at t-168; same-hour weather excluded
+rain_1h_valencia_lag_24,rain_1h_Valencia,historical_weather,24,shift(+24),historical_observation_only,SAFE,Valencia rain_1h observation at t-24; same-hour weather excluded
+rain_1h_valencia_lag_168,rain_1h_Valencia,historical_weather,168,shift(+168),historical_observation_only,SAFE,Valencia rain_1h observation at t-168; same-hour weather excluded
+rain_3h_valencia_lag_24,rain_3h_Valencia,historical_weather,24,shift(+24),historical_observation_only,SAFE,Valencia rain_3h observation at t-24; same-hour weather excluded
+rain_3h_valencia_lag_168,rain_3h_Valencia,historical_weather,168,shift(+168),historical_observation_only,SAFE,Valencia rain_3h observation at t-168; same-hour weather excluded
+snow_3h_valencia_lag_24,snow_3h_Valencia,historical_weather,24,shift(+24),historical_observation_only,SAFE,Valencia snow_3h observation at t-24; same-hour weather excluded
+snow_3h_valencia_lag_168,snow_3h_Valencia,historical_weather,168,shift(+168),historical_observation_only,SAFE,Valencia snow_3h observation at t-168; same-hour weather excluded
+temp_national_mean_lag_24,temp_*,weather_aggregate,24,spatial_stat_then_shift(+24),historical_observation_only,SAFE,"mean temp across 5 cities at s, then lag; uses weather at t-24 only, never t"
+temp_national_mean_lag_168,temp_*,weather_aggregate,168,spatial_stat_then_shift(+168),historical_observation_only,SAFE,"mean temp across 5 cities at s, then lag; uses weather at t-168 only, never t"
+humidity_national_mean_lag_24,humidity_*,weather_aggregate,24,spatial_stat_then_shift(+24),historical_observation_only,SAFE,"mean humidity across 5 cities at s, then lag; uses weather at t-24 only, never t"
+humidity_national_mean_lag_168,humidity_*,weather_aggregate,168,spatial_stat_then_shift(+168),historical_observation_only,SAFE,"mean humidity across 5 cities at s, then lag; uses weather at t-168 only, never t"
+wind_speed_national_mean_lag_24,wind_speed_*,weather_aggregate,24,spatial_stat_then_shift(+24),historical_observation_only,SAFE,"mean wind_speed across 5 cities at s, then lag; uses weather at t-24 only, never t"
+wind_speed_national_mean_lag_168,wind_speed_*,weather_aggregate,168,spatial_stat_then_shift(+168),historical_observation_only,SAFE,"mean wind_speed across 5 cities at s, then lag; uses weather at t-168 only, never t"
+clouds_all_national_mean_lag_24,clouds_all_*,weather_aggregate,24,spatial_stat_then_shift(+24),historical_observation_only,SAFE,"mean clouds_all across 5 cities at s, then lag; uses weather at t-24 only, never t"
+clouds_all_national_mean_lag_168,clouds_all_*,weather_aggregate,168,spatial_stat_then_shift(+168),historical_observation_only,SAFE,"mean clouds_all across 5 cities at s, then lag; uses weather at t-168 only, never t"
+rain_1h_national_max_lag_24,rain_1h_*,weather_aggregate,24,spatial_stat_then_shift(+24),historical_observation_only,SAFE,"max rain_1h across 5 cities at s, then lag; uses weather at t-24 only, never t"
+rain_1h_national_max_lag_168,rain_1h_*,weather_aggregate,168,spatial_stat_then_shift(+168),historical_observation_only,SAFE,"max rain_1h across 5 cities at s, then lag; uses weather at t-168 only, never t"
