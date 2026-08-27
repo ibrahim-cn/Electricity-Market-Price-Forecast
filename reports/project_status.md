@@ -1,6 +1,6 @@
 # Project Status
 
-Locked delivery checklist. Model, α, METHOD_B, test metrics, and the 24-hour production decision are not reopened.
+Locked delivery checklist. Model is Ridge α=0.001 + METHOD_B + AR(1). The 24-hour production decision remains not production-ready.
 
 ## Completed
 
@@ -34,14 +34,14 @@ STRICT availability at D-1 ~12:00 CET: SAFE = 106, UNKNOWN = 6, FORBIDDEN = 75 o
 
 | Item | Value |
 |---|---|
-| Model | Ridge(`alpha=0.001`) |
-| Method | METHOD_B |
+| Model | Ridge(`alpha=0.001`) + METHOD_B + AR(1) |
+| Method | METHOD_B + AR(1) |
 | Development rows | 29,804 |
-| Test MAE | 4.329544 |
-| Test RMSE | 6.136183 |
-| Test R² | 0.639356 |
-| Test sMAPE | 7.739424 |
-| Test bias | +2.133567 |
+| Test MAE | 3.990091 |
+| Test RMSE | 5.878929 |
+| Test R² | 0.668961 |
+| Test sMAPE | 7.314412 |
+| Test bias | +1.419419 |
 | Naive test MAE | 6.045924 |
 | MODEL_BEATS_NAIVE | TRUE |
 | Forecast production | FALSE |

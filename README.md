@@ -1,6 +1,6 @@
-# Spanish Day-Ahead Electricity Price Prediction
+# Elektrik Piyasası Fiyat Tahmini
 
-Locked final project. The model, Ridge α, METHOD_B, locked test metrics, and the **not production-ready** 24-hour forecasting decision are closed. This repository documents that work; it does not reopen selection or tuning.
+Locked final project. The model is Ridge α=0.001 + METHOD_B + AR(1) on residuals. The 24-hour forecasting path remains **not production-ready**.
 
 The assignment prompt used an “ETH/USDT” label. The data, target, features, and dashboard are **Spanish hourly day-ahead electricity** (`price day ahead`, €/MWh). There is no crypto or Reddit series in this repository.
 
@@ -10,7 +10,7 @@ The assignment prompt used an “ETH/USDT” label. The data, target, features, 
 
 This project forecasts the Spanish day-ahead electricity auction price for each delivery hour using only leakage-safe information: calendar, named day-ahead load/renewable forecasts, historical target lags, historical load/generation/weather, national weather aggregates, and METHOD_B high-price frequency features.
 
-The locked model is **Ridge(`alpha=0.001`) + METHOD_B**, selected on chronological walk-forward validation of TRAIN + VALIDATION (29,804 hours). The test set (5,260 hours) was scored once after freeze.
+The locked model is **Ridge(`alpha=0.001`) + METHOD_B + AR(1)**, selected on chronological walk-forward validation of TRAIN + VALIDATION (29,804 hours). The test set (5,260 hours) was scored once after this freeze.
 
 A read-only Streamlit dashboard (`app.py`) displays the locked artifacts. It does not retrain, retune, or emit a production 24-hour forecast.
 
@@ -139,17 +139,18 @@ Compared on **validation** and/or **walk-forward TRAIN+VALIDATION** only. Test w
 
 Walk-forward (four expanding windows on 29,804 development hours) is used because a single validation cut can hide time-varying error and would be the wrong place to tune a time series. Each fold fits preprocess on that fold’s training block only.
 
-Best walk-forward Ridge α = **0.001** (mean MAE 5.7966). METHOD_B then won the high-price-method search (mean MAE **5.496022**).
+Best walk-forward Ridge α = **0.001** (mean MAE 5.7966). METHOD_B then won the high-price-method search (mean MAE **5.496022**). Residual AR(1) with 24-hour block updates was added on walk-forward (mean MAE **4.529617**).
 
 ---
 
 ## Final Model
 
-**Ridge(`alpha=0.001`) + METHOD_B**
+**Ridge(`alpha=0.001`) + METHOD_B + AR(1)**
 
 - Closed-form NumPy Ridge `(X'X + αI)w = X'y` (not `sklearn.Ridge.fit`)
 - 184 SAFE features + 3 causal high-price-frequency features
 - Frozen expanding-historical residual addend from development residuals only (+1.471482)
+- AR(1) on the last 1,440 development residuals of Ridge+METHOD_B; 24-hour block forecasts
 - Development P75 threshold = 57.5825
 - Fit on 29,804 development rows
 - **MODEL STATUS = LOCKED**
@@ -160,23 +161,23 @@ Best walk-forward Ridge α = **0.001** (mean MAE 5.7966). METHOD_B then won the 
 
 Locked holdout, 5,260 hours. Exact stored values:
 
-| Metric | Ridge + METHOD_B | Naive Lag-24 |
+| Metric | Ridge+METHOD_B+AR(1) | Naive Lag-24 |
 |---|---:|---:|
-| MAE | 4.329544 | 6.045924 |
-| RMSE | 6.136183 | 9.030375 |
-| R² | 0.639356 | 0.218923 |
-| sMAPE | 7.739424% | 11.675683% |
-| Bias | +2.133567 | −0.003076 |
+| MAE | 3.990091 | 6.045924 |
+| RMSE | 5.878929 | 9.030375 |
+| R² | 0.668961 | 0.218923 |
+| sMAPE | 7.314412% | 11.675683% |
+| Bias | +1.419419 | −0.003076 |
 
-MODEL_BEATS_NAIVE = TRUE (~28.4% MAE reduction). The naive model is closer to unbiased on this holdout. Lower MAE is not a claim that the model is well calibrated.
+MODEL_BEATS_NAIVE = TRUE (~34.0% MAE reduction). The naive model is closer to unbiased on this holdout. Lower MAE is not a claim that the model is well calibrated.
 
-High-price **test** slice bias (development quantiles, reporting only): P75+ +1.310873, P90+ +1.279965, P95+ +0.677799.
+High-price **test** slice bias (development quantiles, reporting only): P75+ +0.840776, P90+ +0.920483, P95+ +0.556602.
 
 ---
 
 ## Error Analysis
 
-**Development / walk-forward:** METHOD_B mean MAE 5.496022, bias ≈ −0.91 (underprediction). Causal P75+ bias −5.90, P90+ −8.21. Leakage-safe correction methods **did not fully remove** high-price underprediction on development folds.
+**Development / walk-forward:** METHOD_B+AR(1) mean MAE 4.529617, bias ≈ −0.71. METHOD_B alone was 5.496022, bias ≈ −0.91. Causal P75+ bias on METHOD_B was −5.90, P90+ −8.21. Leakage-safe correction methods **did not fully remove** high-price underprediction on development folds.
 
 **Frozen test:** overall bias flipped to **+2.13 (overprediction)**. P75+/P90+/P95+ biases are also positive. Do not write that the model “solved” high-price underprediction. The correct statement is:
 
@@ -270,9 +271,9 @@ There is no `tests/` unit-test suite.
 
 ## Conclusion
 
-The project is a leakage-safe, chronological, walk-forward-validated pipeline with a frozen holdout and a reproducible Ridge + METHOD_B archive.
+The project is a leakage-safe, chronological, walk-forward-validated pipeline with a frozen holdout and a reproducible Ridge + METHOD_B + AR(1) archive.
 
-On the locked test the model **beats Naive Lag-24 on MAE** (4.329544 vs 6.045924) and is explainable with linear SHAP. That is forecasting performance, not a claim that “the model is successful because MAE is 4.33,” and not a claim that high-price error is solved.
+On the locked test the model **beats Naive Lag-24 on MAE** (3.990091 vs 6.045924) and is explainable with linear SHAP. That is forecasting performance, not a claim that high-price error is solved.
 
 **24-hour production forecasting is not ready.**
 

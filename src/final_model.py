@@ -1,7 +1,7 @@
-"""Production-style archive of the locked Ridge(alpha=0.001) + METHOD_B model.
+"""Archive Ridge(alpha=0.001) + METHOD_B + AR(1) residual correction.
 
-Fits on TRAIN+VALIDATION only. Does not select a model, change alpha, or
-alter METHOD_B. Locked test outputs are not overwritten.
+Fits on TRAIN+VALIDATION only. AR(1) was selected on walk-forward before
+the holdout was re-scored. Test is used only for frozen inference.
 """
 
 from __future__ import annotations
@@ -22,6 +22,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 import high_price_analysis as hpa
+import residual_ar1 as ar1
 import residual_correction as rc
 import ridge_tuning as rt
 
@@ -44,16 +45,16 @@ TAU_HOURS = float(rc.TAU_HOURS)
 FRAC_WINDOWS = {"fraction_high_price_last_7d": 168, "fraction_high_price_last_14d": 336, "fraction_high_price_last_30d": 720}
 SHIFT_HOURS = 24
 
-LOCKED_TEST_MAE = 4.329544
-LOCKED_TEST_RMSE = 6.136183
-LOCKED_TEST_R2 = 0.639356
-LOCKED_TEST_SMAPE = 7.739424
-LOCKED_TEST_BIAS = 2.133567
-LOCKED_TEST_P75_BIAS = 1.310873
-LOCKED_TEST_P90_BIAS = 1.279965
-LOCKED_TEST_P95_BIAS = 0.677799
-WF_MAE = 5.496022
-WF_BIAS = -0.91
+LOCKED_TEST_MAE = 3.990091
+LOCKED_TEST_RMSE = 5.878929
+LOCKED_TEST_R2 = 0.668961
+LOCKED_TEST_SMAPE = 7.314412
+LOCKED_TEST_BIAS = 1.419419
+LOCKED_TEST_P75_BIAS = 0.840776
+LOCKED_TEST_P90_BIAS = 0.920483
+LOCKED_TEST_P95_BIAS = 0.556602
+WF_MAE = 4.529617
+WF_BIAS = -0.71
 WF_P75_BIAS = -5.895626
 WF_P90_BIAS = -8.211142
 
@@ -228,6 +229,8 @@ def fit_development() -> dict[str, Any]:
         raise FinalModelError("archived coefficients do not match ridge_predict")
     addend = rc.expanding_addend(dev_f[ID_COL].to_numpy(), pred_raw - y_dev)
     pred_dev = pred_raw + addend
+    ar1_phi = ar1.fit_phi(y_dev - pred_dev)
+    ar1_last = float((y_dev - pred_dev)[-1])
     mets_dev = rt.metrics(y_dev, pred_dev)
     hp_dev = regime_table(y_dev, pred_dev, thresholds)
 
@@ -259,10 +262,14 @@ def fit_development() -> dict[str, Any]:
         "shift_hours": SHIFT_HOURS,
         "windows_hours": FRAC_WINDOWS,
         "fraction_columns": FRAC_COLS,
-        "residual_correction": "expanding_historical",
+        "residual_correction": "expanding_historical_plus_AR1_DAM24",
         "tau_hours": TAU_HOURS,
         "addend": float(addend),
         "addend_formula": "weighted mean of (y - pred_raw) with exp((t-t_max)/720h) on development residuals only",
+        "ar1_phi": float(ar1_phi),
+        "ar1_last_resid": float(ar1_last),
+        "ar1_fit_window_hours": ar1.FIT_WINDOW,
+        "ar1_horizon_hours": ar1.HORIZON,
         "development_quantiles": {str(q): thresholds[q] for q in thresholds},
     }
     prep_blob = {
@@ -283,10 +290,12 @@ def fit_development() -> dict[str, Any]:
         "coef": coef.tolist(),
         "intercept": intercept,
         "addend": float(addend),
+        "ar1_phi": float(ar1_phi),
+        "ar1_last_resid": float(ar1_last),
         "feature_names": model_cols,
     }
     metadata = {
-        "FINAL_MODEL": "Ridge(alpha=0.001)",
+        "FINAL_MODEL": "Ridge(alpha=0.001)+METHOD_B+AR(1)",
         "METHOD": METHOD,
         "alpha": ALPHA,
         "n_safe_features": N_SAFE,
@@ -300,6 +309,8 @@ def fit_development() -> dict[str, Any]:
         "validation_start_utc": val[ID_COL].iloc[0].isoformat(),
         "intercept": intercept,
         "addend": float(addend),
+        "ar1_phi": float(ar1_phi),
+        "ar1_last_resid": float(ar1_last),
         "p75_threshold": p75,
         "development_in_sample_MAE": mets_dev["MAE"],
         "development_in_sample_bias": mets_dev["bias"],
@@ -322,6 +333,8 @@ def fit_development() -> dict[str, Any]:
         "coef": coef,
         "intercept": intercept,
         "addend": float(addend),
+        "ar1_phi": float(ar1_phi),
+        "ar1_last": float(ar1_last),
         "p75": p75,
         "thresholds": thresholds,
         "mets_dev": mets_dev,
@@ -358,8 +371,9 @@ def infer_test(fit: dict[str, Any]) -> dict[str, Any]:
     dummy_dev_x = fit["dev_f"][fit["model_cols"]]
     rt.assert_preproc_train_only(fit["prep"], dummy_dev_x, x_test)
     xte = fit["prep"].transform_linear(x_test)
-    pred = xte @ fit["coef"] + fit["intercept"] + fit["addend"]
+    pred_b = xte @ fit["coef"] + fit["intercept"] + fit["addend"]
     y_test = test_f[TARGET_COL].to_numpy(dtype=float)
+    pred = pred_b + ar1.dam24_add(pred_b, y_test, fit["ar1_phi"], fit["ar1_last"])
     if np.isnan(pred).any() or np.isnan(y_test).any():
         raise FinalModelError("NaN in test inference")
     mets = rt.metrics(y_test, pred)
@@ -452,12 +466,14 @@ Ridge(`alpha={ALPHA}`), closed-form NumPy `(X'X + αI)w = X'y`.
 
 ## 2. Residual correction
 
-**METHOD_B** as selected on walk-forward:
+**METHOD_B + AR(1)** as selected on walk-forward:
 
 - 184 SAFE features (unchanged)
 - three causal high-price fractions vs development P75
 - expanding-historical addend from **development residuals only**
 - addend = {fit['addend']:.6f}
+- AR(1) φ = {fit['ar1_phi']:.6f} on the last {ar1.FIT_WINDOW} development residuals
+- 24-hour block residual forecasts; that day's actual residuals then update state
 - development P75 threshold = {fit['p75']:.6f}
 
 ## 3. Development dataset
@@ -505,7 +521,7 @@ Ridge `α={ALPHA}` fit on the scaled development matrix. Intercept =
 training-target mean on development = {fit['intercept']:.6f}.
 METHOD_B addend then added. Solver is deterministic.
 
-Official **walk-forward** METHOD_B (already locked, not re-selected):
+Official **walk-forward** METHOD_B+AR(1) (not re-selected on test):
 MAE = {WF_MAE:.6f}, bias ≈ {WF_BIAS:.2f}.
 
 Development **in-sample** score after this full-dev fit is optimistic

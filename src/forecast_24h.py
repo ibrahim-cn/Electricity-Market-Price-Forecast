@@ -22,6 +22,7 @@ SRC = Path(__file__).resolve().parent
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+import residual_ar1 as ar1
 import ridge_tuning as rt
 
 ID_COL = rt.ID_COL
@@ -301,7 +302,10 @@ def transform(x: pd.DataFrame, prep: dict[str, Any]) -> np.ndarray:
 def predict_ridge(x: pd.DataFrame, model: dict[str, Any], prep: dict[str, Any]) -> np.ndarray:
     xs = transform(x, prep)
     coef = np.asarray(model["coef"], dtype=float)
-    return xs @ coef + float(model["intercept"]) + float(model["addend"])
+    base = xs @ coef + float(model["intercept"]) + float(model["addend"])
+    phi = float(model.get("ar1_phi", 0.0))
+    last = float(model.get("ar1_last_resid", 0.0))
+    return base + ar1.horizon_add(phi, last, n=len(base))
 
 
 def future_index(origin: pd.Timestamp, n: int = HORIZON) -> pd.DatetimeIndex:

@@ -28,14 +28,14 @@ high_price_walk_forward,Ridge,METHOD_B,p75_bias,-5.895626285487727,train_validat
 high_price_walk_forward,Ridge,METHOD_B,p90_bias,-8.211141731867773,train_validation_folds,High-price underprediction NOT fully solved
 high_price_walk_forward,Ridge,METHOD_A,mean_MAE,5.529761134011018,train_validation_folds,Not selected
 high_price_walk_forward,Ridge,CURRENT_BEST,mean_MAE,5.702475475367791,train_validation_folds,Ridge+expanding addend before METHOD_B
-locked_test,Ridge,METHOD_B,MAE,4.329543532990026,test,Official locked holdout; not used for selection
-locked_test,Ridge,METHOD_B,RMSE,6.136182948044311,test,Official locked holdout
-locked_test,Ridge,METHOD_B,R2,0.6393557529228397,test,Official locked holdout
-locked_test,Ridge,METHOD_B,sMAPE,7.73942350908801,test,Official locked holdout
-locked_test,Ridge,METHOD_B,bias,2.1335666084526506,test,Sign flipped vs development (overprediction)
-locked_test,Ridge,METHOD_B,p75_bias,1.310873,test,Positive; do not call this solved underprediction
-locked_test,Ridge,METHOD_B,p90_bias,1.279965,test,Positive
-locked_test,Ridge,METHOD_B,p95_bias,0.677799,test,Positive
+locked_test,Ridge,METHOD_B_AR1,MAE,3.990090851670634,test,Official locked holdout; not used for selection
+locked_test,Ridge,METHOD_B_AR1,RMSE,5.87892908715159,test,Official locked holdout
+locked_test,Ridge,METHOD_B_AR1,R2,0.6689612349174122,test,Official locked holdout
+locked_test,Ridge,METHOD_B_AR1,sMAPE,7.314412406165712,test,Official locked holdout
+locked_test,Ridge,METHOD_B_AR1,bias,1.4194186771927255,test,Sign flipped vs development (overprediction)
+locked_test,Ridge,METHOD_B_AR1,p75_bias,0.840776,test,Positive; do not call this solved underprediction
+locked_test,Ridge,METHOD_B_AR1,p90_bias,0.920483,test,Positive
+locked_test,Ridge,METHOD_B_AR1,p95_bias,0.556602,test,Positive
 locked_test,Naive Lag-24,none,MAE,6.045923954372624,test,Pre-specified baseline; MODEL_BEATS_NAIVE=TRUE
 locked_test,Naive Lag-24,none,RMSE,9.030375003266464,test,Pre-specified baseline
 locked_test,Naive Lag-24,none,R2,0.21892276348737794,test,Pre-specified baseline

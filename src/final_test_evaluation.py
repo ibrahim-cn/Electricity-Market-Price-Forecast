@@ -1,10 +1,12 @@
 """Final locked holdout evaluation.
 
 Frozen pipeline: Ridge(alpha=0.001) + METHOD_B frequency features
-+ the expanding_historical addend that was part of the selected walk-forward METHOD_B.
++ the expanding_historical addend + AR(1) residual correction (DAM 24h blocks).
 
-Test is read only after development fitting objects are frozen.
-Test y is never used for thresholds, preprocessing, Ridge, or the addend.
+AR(1) was selected on TRAIN+VALIDATION walk-forward only. Test is read after
+development fitting objects are frozen. Test y is never used for thresholds,
+preprocessing, Ridge, the addend, or AR(1) phi. After each 24h forecast block,
+published test residuals update the AR(1) state (same delay idea as lag-24).
 """
 
 from __future__ import annotations
@@ -25,6 +27,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 import high_price_analysis as hpa
+import residual_ar1 as ar1
 import residual_correction as rc
 import ridge_tuning as rt
 
@@ -39,9 +42,9 @@ ALPHA = 0.001
 RANDOM_STATE = 42
 FRAC_COLS = hpa.FRAC_COLS
 
-VAL_MAE = 5.496022
-VAL_MAE_STD = 0.450160
-VAL_BIAS = -0.91
+VAL_MAE = 4.529617
+VAL_MAE_STD = 0.561220
+VAL_BIAS = -0.71
 VAL_P75_BIAS = -5.895626
 VAL_P90_BIAS = -8.211142
 
@@ -159,23 +162,26 @@ def write_report(
 **FINAL_TEST_EVALUATION = {status}**
 
 Test parquet was read **once the pipeline was frozen**. It was not used to
-select the model, alpha, METHOD_B, thresholds, or residual addend.
+select the model, alpha, METHOD_B, AR(1) phi, thresholds, or residual addend.
 
 ## 1. Selected model
 
-Ridge, closed-form NumPy, `alpha = {ALPHA}`. `random_state = {RANDOM_STATE}` is
-recorded for pipeline consistency; the solver is deterministic.
+Ridge, closed-form NumPy, `alpha = {ALPHA}`, plus METHOD_B and AR(1) on
+Ridge+METHOD_B residuals. `random_state = {RANDOM_STATE}` is recorded for
+pipeline consistency; Ridge and AR(1) are deterministic.
 
 ## 2. Selected method
 
-**METHOD_B** as selected on walk-forward:
+**METHOD_B + AR(1)** as selected on walk-forward:
 
 - 184 SAFE features from `train`/`validation`/`test` parquets
 - three causal high-price-frequency features (`y` shifted 24h, then 168/336/720-hour windows)
 - high-price flag threshold = **development P75** = {p75_dev:.4f} (`quantile(y_train+y_val, 0.75)` only)
 - frozen `expanding_historical` addend from development residuals only (addend = {addend:.6f})
+- AR(1) on the last 1440 development residuals of Ridge+METHOD_B; 24-hour
+  block forecasts, then that day's actual residuals update the state
 
-No alpha, feature, threshold, or correction search was run on test.
+No alpha, feature, threshold, AR(1) order, or correction search was run on test.
 
 ## 3. Walk-forward validation (frozen numbers)
 
@@ -201,7 +207,7 @@ Test rows scored: **{n_test}**. Rows dropped: **{n_dropped}**.
 
 ## 5. Naive Lag-24 (same test rows)
 
-| | Ridge+METHOD_B | Naive Lag-24 |
+| | Ridge+METHOD_B+AR(1) | Naive Lag-24 |
 |---|---:|---:|
 | MAE | {mets['MAE']:.6f} | {naive['MAE']:.6f} |
 | RMSE | {mets['RMSE']:.6f} | {naive['RMSE']:.6f} |
@@ -302,8 +308,8 @@ PROTECTED_FILES_UNCHANGED = {str(prot_ok).upper()}
 ## Machine-readable summary
 
 FINAL_TEST_EVALUATION = {status}
-SELECTED_MODEL = Ridge(alpha=0.001)
-SELECTED_METHOD = METHOD_B
+SELECTED_MODEL = Ridge(alpha=0.001)+METHOD_B+AR(1)
+SELECTED_METHOD = METHOD_B_AR1
 VALIDATION_MAE = {VAL_MAE:.6f}
 TEST_MAE = {mets['MAE']:.6f}
 TEST_RMSE = {mets['RMSE']:.6f}
@@ -366,12 +372,13 @@ def run_once() -> dict[str, Any]:
     rt.assert_preproc_train_only(prep, x_dev, x_test)
     xtr = prep.transform_linear(x_dev)
     xte = prep.transform_linear(x_test)
-    pred_dev = rt.ridge_predict(xtr, y_dev, xtr, ALPHA)
+    pred_dev_raw = rt.ridge_predict(xtr, y_dev, xtr, ALPHA)
     pred_test_raw = rt.ridge_predict(xtr, y_dev, xte, ALPHA)
-    addend = rc.expanding_addend(dev_f[ID_COL].to_numpy(), pred_dev - y_dev)
-    pred_test = pred_test_raw + addend
-
+    addend = rc.expanding_addend(dev_f[ID_COL].to_numpy(), pred_dev_raw - y_dev)
+    pred_dev = pred_dev_raw + addend
+    pred_test_b = pred_test_raw + addend
     y_test = test_f[TARGET_COL].to_numpy(dtype=float)
+    pred_test, ar1_phi, ar1_last = ar1.apply(pred_test_b, y_test, y_dev - pred_dev)
     naive = test_f[LAG24].to_numpy(dtype=float)
     n_dropped = 0
     if np.isnan(pred_test).any() or np.isnan(y_test).any():
@@ -416,7 +423,7 @@ def run_once() -> dict[str, Any]:
 
     metrics_tbl = pd.DataFrame(
         [
-            {"split": "test", "model": "Ridge_a0.001_METHOD_B", **mets},
+            {"split": "test", "model": "Ridge_a0.001_METHOD_B_AR1", **mets},
             {"split": "test", "model": "Naive Lag-24", **naive_mets},
         ]
     )
@@ -465,6 +472,8 @@ def run_once() -> dict[str, Any]:
         "dev_stats": dev_stats,
         "test_stats": test_stats,
         "addend": float(addend),
+        "ar1_phi": float(ar1_phi),
+        "ar1_last_resid": float(ar1_last),
         "thresholds": thresholds,
         "q_err": q_err,
     }
@@ -534,8 +543,8 @@ if __name__ == "__main__":
     print(json.dumps(result["hashes_run1"], indent=2))
     print(json.dumps(result["hashes_run2"], indent=2))
     print(f"FINAL_TEST_EVALUATION = {result['status']}")
-    print("SELECTED_MODEL = Ridge(alpha=0.001)")
-    print("SELECTED_METHOD = METHOD_B")
+    print("SELECTED_MODEL = Ridge(alpha=0.001)+METHOD_B+AR(1)")
+    print("SELECTED_METHOD = METHOD_B_AR1")
     print(f"VALIDATION_MAE = {VAL_MAE:.6f}")
     print(f"TEST_MAE = {m['MAE']:.6f}")
     print(f"TEST_RMSE = {m['RMSE']:.6f}")

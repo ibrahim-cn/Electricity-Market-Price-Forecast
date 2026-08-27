@@ -3,31 +3,34 @@
 **FINAL_TEST_EVALUATION = PASS**
 
 Test parquet was read **once the pipeline was frozen**. It was not used to
-select the model, alpha, METHOD_B, thresholds, or residual addend.
+select the model, alpha, METHOD_B, AR(1) phi, thresholds, or residual addend.
 
 ## 1. Selected model
 
-Ridge, closed-form NumPy, `alpha = 0.001`. `random_state = 42` is
-recorded for pipeline consistency; the solver is deterministic.
+Ridge, closed-form NumPy, `alpha = 0.001`, plus METHOD_B and AR(1) on
+Ridge+METHOD_B residuals. `random_state = 42` is recorded for
+pipeline consistency; Ridge and AR(1) are deterministic.
 
 ## 2. Selected method
 
-**METHOD_B** as selected on walk-forward:
+**METHOD_B + AR(1)** as selected on walk-forward:
 
 - 184 SAFE features from `train`/`validation`/`test` parquets
 - three causal high-price-frequency features (`y` shifted 24h, then 168/336/720-hour windows)
 - high-price flag threshold = **development P75** = 57.5825 (`quantile(y_train+y_val, 0.75)` only)
 - frozen `expanding_historical` addend from development residuals only (addend = 1.471482)
+- AR(1) on the last 1440 development residuals of Ridge+METHOD_B; 24-hour
+  block forecasts, then that day's actual residuals update the state
 
-No alpha, feature, threshold, or correction search was run on test.
+No alpha, feature, threshold, AR(1) order, or correction search was run on test.
 
 ## 3. Walk-forward validation (frozen numbers)
 
 | metric | value |
 |---|---|
-| mean MAE | 5.496022 |
-| MAE std | 0.450160 |
-| mean bias | -0.91 |
+| mean MAE | 4.529617 |
+| MAE std | 0.561220 |
+| mean bias | -0.71 |
 | P75+ bias (causal fold-train) | -5.895626 |
 | P90+ bias (causal fold-train) | -8.211142 |
 
@@ -37,19 +40,19 @@ Test rows scored: **5260**. Rows dropped: **0**.
 
 | metric | test |
 |---|---|
-| MAE | 4.329544 |
-| RMSE | 6.136183 |
-| R² | 0.639356 |
-| sMAPE | 7.739424 |
-| bias | 2.133567 |
+| MAE | 3.990091 |
+| RMSE | 5.878929 |
+| R² | 0.668961 |
+| sMAPE | 7.314412 |
+| bias | 1.419419 |
 
 ## 5. Naive Lag-24 (same test rows)
 
-| | Ridge+METHOD_B | Naive Lag-24 |
+| | Ridge+METHOD_B+AR(1) | Naive Lag-24 |
 |---|---:|---:|
-| MAE | 4.329544 | 6.045924 |
-| RMSE | 6.136183 | 9.030375 |
-| bias | 2.133567 | -0.003076 |
+| MAE | 3.990091 | 6.045924 |
+| RMSE | 5.878929 | 9.030375 |
+| bias | 1.419419 | -0.003076 |
 
 MODEL_BEATS_NAIVE = TRUE
 
@@ -61,19 +64,19 @@ Thresholds come from train+validation only.
 
 | regime | q | threshold | n | MAE | bias | y_mean | y_pred_mean |
 |---|---|---|---|---|---|---|---|
-| P25+ | 0.2500 | 40.0000 | 5065 | 4.0397 | 1.7968 | 62.3643 | 64.1612 |
-| P50+ | 0.5000 | 48.6500 | 4771 | 3.8728 | 1.5955 | 63.4289 | 65.0245 |
-| P75+ | 0.7500 | 57.5825 | 3747 | 3.6536 | 1.3109 | 66.1422 | 67.4531 |
-| P90+ | 0.9000 | 65.0000 | 2005 | 3.8676 | 1.2800 | 69.9211 | 71.2011 |
-| P95+ | 0.9500 | 69.2500 | 1014 | 3.7506 | 0.6778 | 72.7910 | 73.4688 |
+| P25+ | 0.2500 | 40.0000 | 5065 | 3.7149 | 1.1684 | 62.3643 | 63.5328 |
+| P50+ | 0.5000 | 48.6500 | 4771 | 3.5510 | 1.0344 | 63.4289 | 64.4633 |
+| P75+ | 0.7500 | 57.5825 | 3747 | 3.2625 | 0.8408 | 66.1422 | 66.9830 |
+| P90+ | 0.9000 | 65.0000 | 2005 | 3.3735 | 0.9205 | 69.9211 | 70.8416 |
+| P95+ | 0.9500 | 69.2500 | 1014 | 3.2544 | 0.5566 | 72.7910 | 73.3476 |
 
-TEST_P75_BIAS = 1.310873
-TEST_P90_BIAS = 1.279965
-TEST_P95_BIAS = 0.677799
+TEST_P75_BIAS = 0.840776
+TEST_P90_BIAS = 0.920483
+TEST_P95_BIAS = 0.556602
 
 ## 7. Bias analysis
 
-Overall test bias = 2.134 (validation walk-forward mean bias -0.91).
+Overall test bias = 1.419 (validation walk-forward mean bias -0.71).
 The sign flipped: walk-forward underpredicted on average; the frozen holdout
 **overpredicts**. P75+/P90+/P95+ biases are also positive on test.
 
@@ -81,10 +84,10 @@ The sign flipped: walk-forward underpredicted on average; the frozen holdout
 
 | | walk-forward val | test | delta (test − val) |
 |---|---:|---:|---:|
-| MAE | 5.496022 | 4.329544 | -1.166478 |
-| bias | -0.91 | 2.133567 | 3.043567 |
-| P75+ bias | -5.895626 | 1.310873 | 7.206499 |
-| P90+ bias | -8.211142 | 1.279965 | 9.491107 |
+| MAE | 4.529617 | 3.990091 | -0.539526 |
+| bias | -0.71 | 1.419419 | 2.129419 |
+| P75+ bias | -5.895626 | 0.840776 | 6.736402 |
+| P90+ bias | -8.211142 | 0.920483 | 9.131625 |
 
 Test MAE is not materially worse than walk-forward MAE.
 
@@ -129,9 +132,9 @@ Ridge weights, and residual addend used **no test target**.
 
 Hour / weekday / month MAE:
 
-Worst hours: [8, 3, 2, 4, 1]
-Worst months: [10, 7, 12]
-Worst weekdays (Mon=0): [0, 5, 2]
+Worst hours: [1, 2, 4, 3, 8]
+Worst months: [10, 12, 11]
+Worst weekdays (Mon=0): [0, 5, 6]
 
 ## Reproducibility and protected files
 
@@ -148,27 +151,27 @@ PROTECTED_FILES_UNCHANGED = TRUE
 
 | file | md5 |
 |---|---|
-| final_test_predictions.parquet | 586d26918ee347ee74d70a25535836eb |
-| final_test_metrics.csv | 1ff84294518988ad83186f0ebdfec9cf |
-| final_test_error_by_hour.csv | 603a36669904e22fdb33afad370dd386 |
-| final_test_error_by_month.csv | 55d406a7d4ac283c79cd0cefadad0861 |
-| final_test_error_by_weekday.csv | 6509391d47483f448a4c0158f28a91c8 |
-| final_test_error_by_price_quantile.csv | 61178fd22f32bda3192173afcaba7c46 |
+| final_test_predictions.parquet | 2b95a1c95aebb62c9b480c6da3765a24 |
+| final_test_metrics.csv | 9605a651aaedd892a9130ec0d631485e |
+| final_test_error_by_hour.csv | 2b5f1bc46b9b17f0d5e3a74cf754ca78 |
+| final_test_error_by_month.csv | 1961a065d4d8046d25df1f61d464e634 |
+| final_test_error_by_weekday.csv | ff03ba05f30e371e34a70a8d04b55e30 |
+| final_test_error_by_price_quantile.csv | 1e292c5e363262e2d2e9f51c73b34e1f |
 
 ## Machine-readable summary
 
 FINAL_TEST_EVALUATION = PASS
-SELECTED_MODEL = Ridge(alpha=0.001)
-SELECTED_METHOD = METHOD_B
-VALIDATION_MAE = 5.496022
-TEST_MAE = 4.329544
-TEST_RMSE = 6.136183
-TEST_R2 = 0.639356
-TEST_SMAPE = 7.739424
-TEST_BIAS = 2.133567
-TEST_P75_BIAS = 1.310873
-TEST_P90_BIAS = 1.279965
-TEST_P95_BIAS = 0.677799
+SELECTED_MODEL = Ridge(alpha=0.001)+METHOD_B+AR(1)
+SELECTED_METHOD = METHOD_B_AR1
+VALIDATION_MAE = 4.529617
+TEST_MAE = 3.990091
+TEST_RMSE = 5.878929
+TEST_R2 = 0.668961
+TEST_SMAPE = 7.314412
+TEST_BIAS = 1.419419
+TEST_P75_BIAS = 0.840776
+TEST_P90_BIAS = 0.920483
+TEST_P95_BIAS = 0.556602
 NAIVE_TEST_MAE = 6.045924
 MODEL_BEATS_NAIVE = TRUE
 TEST_USED_FOR_TUNING = FALSE

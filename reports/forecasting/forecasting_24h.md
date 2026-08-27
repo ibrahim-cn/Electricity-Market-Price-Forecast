@@ -126,30 +126,30 @@ Origin = 2018-05-25T18:00:00+00:00 (development only).
 
 | timestamp_utc | forecast_horizon | y_pred | forecast_origin | model | alpha | method | scenario | production_ready | blocking_reason |
 |---|---|---|---|---|---|---|---|---|---|
-| 2018-05-25T19:00:00+00:00 | h+1 | 70.0942 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-25T20:00:00+00:00 | h+2 | 68.9261 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-25T21:00:00+00:00 | h+3 | 68.5771 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-25T22:00:00+00:00 | h+4 | 68.0978 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-25T23:00:00+00:00 | h+5 | 67.0072 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T00:00:00+00:00 | h+6 | 64.9872 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T01:00:00+00:00 | h+7 | 65.6067 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T02:00:00+00:00 | h+8 | 64.2720 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T03:00:00+00:00 | h+9 | 65.2047 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T04:00:00+00:00 | h+10 | 64.4546 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T05:00:00+00:00 | h+11 | 62.6977 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T06:00:00+00:00 | h+12 | 63.2442 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T07:00:00+00:00 | h+13 | 63.5649 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T08:00:00+00:00 | h+14 | 63.0667 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T09:00:00+00:00 | h+15 | 61.2576 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T10:00:00+00:00 | h+16 | 60.4183 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T11:00:00+00:00 | h+17 | 58.7333 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T12:00:00+00:00 | h+18 | 57.3372 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T13:00:00+00:00 | h+19 | 56.0054 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T14:00:00+00:00 | h+20 | 54.2281 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T15:00:00+00:00 | h+21 | 55.2490 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T16:00:00+00:00 | h+22 | 58.2675 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T17:00:00+00:00 | h+23 | 61.2755 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
-| 2018-05-26T18:00:00+00:00 | h+24 | 62.1866 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-25T19:00:00+00:00 | h+1 | 72.1579 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-25T20:00:00+00:00 | h+2 | 70.8079 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-25T21:00:00+00:00 | h+3 | 70.2928 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-25T22:00:00+00:00 | h+4 | 69.6623 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-25T23:00:00+00:00 | h+5 | 68.4337 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T00:00:00+00:00 | h+6 | 66.2878 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T01:00:00+00:00 | h+7 | 66.7927 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T02:00:00+00:00 | h+8 | 65.3534 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T03:00:00+00:00 | h+9 | 66.1906 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T04:00:00+00:00 | h+10 | 65.3536 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T05:00:00+00:00 | h+11 | 63.5174 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T06:00:00+00:00 | h+12 | 63.9916 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T07:00:00+00:00 | h+13 | 64.2464 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T08:00:00+00:00 | h+14 | 63.6881 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T09:00:00+00:00 | h+15 | 61.8242 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T10:00:00+00:00 | h+16 | 60.9349 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T11:00:00+00:00 | h+17 | 59.2043 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T12:00:00+00:00 | h+18 | 57.7667 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T13:00:00+00:00 | h+19 | 56.3971 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T14:00:00+00:00 | h+20 | 54.5851 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T15:00:00+00:00 | h+21 | 55.5746 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T16:00:00+00:00 | h+22 | 58.5644 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T17:00:00+00:00 | h+23 | 61.5462 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
+| 2018-05-26T18:00:00+00:00 | h+24 | 62.4334 | 2018-05-25T18:00:00+00:00 | Ridge | 0.0010 | METHOD_B | DATASET_ASSUMED | False | forecast publication time not verified; not a DAM-noon origin |
 
 These numbers must not be used to retune, pick features, or change METHOD_B.
 
@@ -196,7 +196,7 @@ FEATURE_AVAILABILITY_AUDIT = PASS
 |---|---|
 | forecasting_availability_audit.csv | 5e680a1608e4c6e9651d82678ff3b108 |
 | forecasting_predictions.csv | f53676704bb3c681d76e4cc2a368bfb0 |
-| forecasting_predictions_assumed.csv | d8278424fe1c77990900133a78029d5a |
+| forecasting_predictions_assumed.csv | 8b6dfa93e5daddd748f3bb167823c651 |
 
 Locked test evaluation files were not rewritten.
 

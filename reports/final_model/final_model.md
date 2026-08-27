@@ -13,12 +13,14 @@ Ridge(`alpha=0.001`), closed-form NumPy `(X'X + αI)w = X'y`.
 
 ## 2. Residual correction
 
-**METHOD_B** as selected on walk-forward:
+**METHOD_B + AR(1)** as selected on walk-forward:
 
 - 184 SAFE features (unchanged)
 - three causal high-price fractions vs development P75
 - expanding-historical addend from **development residuals only**
 - addend = 1.471482
+- AR(1) φ = 0.911802 on the last 1440 development residuals
+- 24-hour block residual forecasts; that day's actual residuals then update state
 - development P75 threshold = 57.582500
 
 ## 3. Development dataset
@@ -66,8 +68,8 @@ Ridge `α=0.001` fit on the scaled development matrix. Intercept =
 training-target mean on development = 47.885429.
 METHOD_B addend then added. Solver is deterministic.
 
-Official **walk-forward** METHOD_B (already locked, not re-selected):
-MAE = 5.496022, bias ≈ -0.91.
+Official **walk-forward** METHOD_B+AR(1) (not re-selected on test):
+MAE = 4.529617, bias ≈ -0.71.
 
 Development **in-sample** score after this full-dev fit is optimistic
 (MAE = 4.472012, bias = 1.471482)
@@ -101,14 +103,14 @@ reason to change the model.
 
 | metric | locked test |
 |---|---:|
-| MAE | 4.329544 |
-| RMSE | 6.136183 |
-| R² | 0.639356 |
-| sMAPE | 7.739424 |
-| Bias | +2.133567 |
+| MAE | 3.990091 |
+| RMSE | 5.878929 |
+| R² | 0.668961 |
+| sMAPE | 7.314412 |
+| Bias | +1.419419 |
 
-This run's inference: MAE = 4.329544, RMSE = 6.136183,
-R² = 0.639356, sMAPE = 7.739424, bias = 2.133567.
+This run's inference: MAE = 3.990091, RMSE = 5.878929,
+R² = 0.668961, sMAPE = 7.314412, bias = 1.419419.
 
 ## High-price (development in-sample)
 
@@ -131,17 +133,17 @@ Previously recorded, **not** used for tuning:
 
 | regime | locked bias |
 |---|---:|
-| P75+ | +1.310873 |
-| P90+ | +1.279965 |
-| P95+ | +0.677799 |
+| P75+ | +0.840776 |
+| P90+ | +0.920483 |
+| P95+ | +0.556602 |
 
 This run (same frozen objects):
 
 | regime | q | threshold | n | MAE | bias |
 |---|---|---|---|---|---|
-| P75+ | 0.7500 | 57.5825 | 3747 | 3.6536 | 1.3109 |
-| P90+ | 0.9000 | 65.0000 | 2005 | 3.8676 | 1.2800 |
-| P95+ | 0.9500 | 69.2500 | 1014 | 3.7506 | 0.6778 |
+| P75+ | 0.7500 | 57.5825 | 3747 | 3.2625 | 0.8408 |
+| P90+ | 0.9000 | 65.0000 | 2005 | 3.3735 | 0.9205 |
+| P95+ | 0.9500 | 69.2500 | 1014 | 3.2544 | 0.5566 |
 
 ## Standardized coefficients (largest |w|)
 
@@ -170,13 +172,13 @@ weights, not causal effects. `month` / `day_of_year` remain a collinear pair.
 
 | path | md5 |
 |---|---|
-| model.joblib | fe5038edced95c791bf2dcace597f48d |
+| model.joblib | 4241f2fdcca596c7a59464c9f95a30c2 |
 | preprocessing.joblib | 75a56ce75b8c5da86d28a80d3ee19d99 |
 | feature_manifest.json | 94eb94ecf340e479a9c156e5f7699979 |
-| model_metadata.json | 2af3c7beb4e661a7f5cb2adda9b7947b |
-| method_b_parameters.json | ee6f9608dfc92f1e5fda4222fef22cce |
+| model_metadata.json | ec9441100d3fe9e044705b7f1e8209bf |
+| method_b_parameters.json | f3911b778cbfc7c0a5bc6ce1d84c6a94 |
 | final_model_coefficients.csv | 17ae6db8939c3a9ef866bd099697154e |
-| final_model_test_predictions.parquet | 586d26918ee347ee74d70a25535836eb |
+| final_model_test_predictions.parquet | 2b95a1c95aebb62c9b480c6da3765a24 |
 
 Locked files (`final_test_predictions.parquet`, `final_test_metrics.csv`,
 `final_test_evaluation.md`) were not rewritten.
@@ -194,9 +196,9 @@ PROTECTED_FILES_UNCHANGED = TRUE
 | train.parquet | 278666dcdb30990b55a6aa5c882f21ee | 278666dcdb30990b55a6aa5c882f21ee | True |
 | validation.parquet | cba753fa9327955d506139d25fdaae4d | cba753fa9327955d506139d25fdaae4d | True |
 | test.parquet | 069afbe9c766426d2e095282ece93a69 | 069afbe9c766426d2e095282ece93a69 | True |
-| final_test_predictions.parquet | 586d26918ee347ee74d70a25535836eb | 586d26918ee347ee74d70a25535836eb | True |
-| final_test_metrics.csv | 1ff84294518988ad83186f0ebdfec9cf | 1ff84294518988ad83186f0ebdfec9cf | True |
-| final_test_evaluation.md | 4e66d3e815f90cac5b0276653b947cf0 | 4e66d3e815f90cac5b0276653b947cf0 | True |
+| final_test_predictions.parquet | 2b95a1c95aebb62c9b480c6da3765a24 | 2b95a1c95aebb62c9b480c6da3765a24 | True |
+| final_test_metrics.csv | 9605a651aaedd892a9130ec0d631485e | 9605a651aaedd892a9130ec0d631485e | True |
+| final_test_evaluation.md | c434ec54e833230836d69a42fe5cc64d | c434ec54e833230836d69a42fe5cc64d | True |
 | high_price_strategy_comparison.md | 411ce6d06ca2a239e81f1056e9d3b3cb | 411ce6d06ca2a239e81f1056e9d3b3cb | True |
 | shap_explainability.md | d8af078308919b7d61887fa27fe30c7b | d8af078308919b7d61887fa27fe30c7b | True |
 

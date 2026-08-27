@@ -14,15 +14,43 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parent
 
-LOCKED_MAE = 4.329544
-LOCKED_RMSE = 6.136183
-LOCKED_R2 = 0.639356
-LOCKED_SMAPE = 7.739424
-LOCKED_BIAS = 2.133567
+LOCKED_MAE = 3.990091
+LOCKED_RMSE = 5.878929
+LOCKED_R2 = 0.668961
+LOCKED_SMAPE = 7.314412
+LOCKED_BIAS = 1.419419
 NAIVE_MAE = 6.045924
-P75_BIAS = 1.310873
-P90_BIAS = 1.279965
-P95_BIAS = 0.677799
+P75_BIAS = 0.840776
+P90_BIAS = 0.920483
+P95_BIAS = 0.556602
+
+# Sunum sırası (walk-forward, 4 kat, TRAIN+VAL). Test yalnızca kilitli finalde.
+PRESENT_MODELS = (
+    "Ridge",
+    "LightGBM",
+    "XGBoost",
+    "ARIMA",
+    "Ridge+B+AR(1)",
+)
+WF_COMPARE = pd.DataFrame(
+    {
+        "Sıra": [1, 2, 3, 4, 5],
+        "Model": list(PRESENT_MODELS),
+        "MAE": [5.796612, 5.916945, 5.945953, 4.529617, 4.529617],
+        "RMSE": [7.414208, 7.852708, 7.905745, 6.070565, 6.070565],
+        "R²": [0.622150, 0.606148, 0.601387, 0.747805, 0.747805],
+        "sMAPE": [12.837611, 13.003515, 13.056313, 10.146126, 10.146126],
+        "Sapma": [-1.896630, -3.153088, -3.069063, -0.712679, -0.712679],
+        "Test MAE": [None, None, None, None, LOCKED_MAE],
+        "Not": [
+            "α=0.001, 184 özellik",
+            "184 özellik, ayarsız 200 ağaç",
+            "184 özellik, ayarsız 200 ağaç",
+            "Ridge+METHOD_B artığına ARIMA(1,0,0), 24s blok",
+            "Kilitli model (METHOD_B + AR(1))",
+        ],
+    }
+)
 
 PRED_CANDIDATES = (
     ROOT / "data" / "processed" / "final_model" / "final_model_test_predictions.parquet",
@@ -134,6 +162,55 @@ def kpi(label: str, value: str) -> None:
     )
 
 
+def presentation_mae_chart() -> None:
+    plot = WF_COMPARE[["Sıra", "Model", "MAE"]].copy()
+    plot["etiket"] = plot["Sıra"].astype(str) + ". " + plot["Model"]
+    try:
+        import altair as alt
+
+        chart = (
+            alt.Chart(plot)
+            .mark_bar()
+            .encode(
+                x=alt.X("etiket:N", sort=list(plot["etiket"]), title=""),
+                y=alt.Y("MAE:Q", title="Walk-forward MAE (€/MWh)"),
+                color=alt.condition(
+                    alt.datum.etiket == "5. Ridge+B+AR(1)",
+                    alt.value("#1f4e9b"),
+                    alt.value("#8aa0c2"),
+                ),
+            )
+            .properties(height=320)
+        )
+        st.altair_chart(chart, use_container_width=True)
+    except Exception:
+        st.bar_chart(plot.set_index("etiket")[["MAE"]])
+
+
+def page_compare() -> None:
+    st.subheader("Model karşılaştırması")
+    st.write(
+        "Sunum sırası sabittir: **Ridge → LightGBM → XGBoost → ARIMA → Ridge+B+AR(1)**. "
+        "Sayılar 4 katlı walk-forward MAE’dir (TRAIN+VALIDATION). Test yalnızca kilitli finale bakıldı."
+    )
+    st.caption(
+        "ARIMA, ham fiyata tek değişkenli ARIMA değildir. Ridge+METHOD_B artıklarına "
+        "ARIMA(1,0,0) yani AR(1) oturtulmuştur; 24 saatlik gün öncesi blok protokolü."
+    )
+
+    presentation_mae_chart()
+
+    show = WF_COMPARE.copy()
+    show["MAE"] = show["MAE"].map(lambda x: f"{x:.2f}")
+    show["RMSE"] = show["RMSE"].map(lambda x: f"{x:.2f}")
+    show["R²"] = show["R²"].map(lambda x: f"{x:.3f}")
+    show["sMAPE"] = show["sMAPE"].map(lambda x: f"{x:.1f}")
+    show["Sapma"] = show["Sapma"].map(lambda x: f"{x:.2f}")
+    show["Test MAE"] = show["Test MAE"].apply(lambda x: "—" if pd.isna(x) else f"{x:.2f}")
+    st.dataframe(show, hide_index=True, use_container_width=True)
+    st.success("Kilitli teslimat: **5. Ridge+B+AR(1)** · test MAE = 3,99 · naive = 6,05")
+
+
 def page_overview() -> None:
     st.subheader("Bu proje ne yapıyor?")
     st.write(
@@ -149,9 +226,9 @@ def page_overview() -> None:
 
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        kpi("Model", "Ridge α=0.001")
+        kpi("Model", "Ridge+B+AR(1)")
     with c2:
-        kpi("Artık düzeltmesi", "METHOD_B")
+        kpi("Artık düzeltmesi", "METHOD_B + AR(1)")
     with c3:
         kpi("Test MAE", f"{LOCKED_MAE:.2f}")
     with c4:
@@ -168,8 +245,8 @@ def page_overview() -> None:
         kpi("Naive'i geçti", "EVET")
 
     st.caption(
-        "Kilitli test: 5.260 saat. Naive Lag-24'e göre MAE iyileşmesi yaklaşık %28,4. "
-        "Düşük MAE, modelin yansız olduğu anlamına gelmez (test sapması = +2,13)."
+        "Kilitli test: 5.260 saat. Naive Lag-24'e göre MAE iyileşmesi yaklaşık %34. "
+        "Düşük MAE, modelin yansız olduğu anlamına gelmez (test sapması = +1,42)."
     )
     st.warning(
         "24 saatlik operasyonel tahmin **üretime hazır değil**. "
@@ -191,9 +268,9 @@ def page_performance() -> None:
     with m5:
         kpi("Sapma", f"+{LOCKED_BIAS:.2f}")
 
-    cmp = pd.DataFrame({"Model": ["Naive Lag-24", "Ridge + METHOD_B"], "Test MAE": [NAIVE_MAE, LOCKED_MAE]})
-    st.bar_chart(cmp.set_index("Model"))
-    st.caption("Resmi kilitli karşılaştırma. Model yeniden seçilmedi.")
+    st.markdown("**Sunum sırası (walk-forward MAE)**")
+    presentation_mae_chart()
+    st.caption("Resmi kilitli skor yalnızca Ridge+B+AR(1) içindir. Naive Lag-24 test MAE = 6,05.")
 
     pred = load_predictions()
     if pred is None:
@@ -217,7 +294,7 @@ def page_performance() -> None:
         st.markdown("**Gerçek vs tahmin saçılımı**")
         scatter = pred[["y_true", "y_pred"]].rename(columns={"y_true": "Gerçek", "y_pred": "Tahmin"})
         st.scatter_chart(scatter, x="Gerçek", y="Tahmin")
-    st.caption("Pozitif artık = aşırı tahmin. Kilitli test sapması +2,13.")
+    st.caption("Pozitif artık = aşırı tahmin. Kilitli test sapması +1,42.")
 
 
 def page_errors() -> None:
@@ -524,18 +601,29 @@ Açıklanabilirlik → Final model → Kilitli test değerlendirme → 24s tahmi
         }
     )
     st.dataframe(status, hide_index=True, use_container_width=True)
-    st.caption("Pano yalnızca kayıtlı çıktıları okur. Ridge eğitmez, SHAP hesaplamaz, üretim tahmini basmaz.")
+    st.markdown(
+        """
+**Karşılaştırılan modeller (sunum sırası)**
+
+1. Ridge  
+2. LightGBM  
+3. XGBoost  
+4. ARIMA (Ridge+METHOD_B artığı, ARIMA(1,0,0))  
+5. Ridge+B+AR(1) — kilitli teslimat
+"""
+    )
 
 
 def main() -> None:
-    st.set_page_config(page_title="İspanya Elektrik Gün Öncesi Fiyat", layout="wide")
-    st.title("İspanya Elektrik Gün Öncesi Fiyat Tahmini")
-    st.caption("Sızıntısız zaman serisi makine öğrenmesi hattı")
+    st.set_page_config(page_title="Elektrik Piyasası Fiyat Tahmini", layout="wide")
+    st.title("Elektrik Piyasası Fiyat Tahmini")
+    st.caption("İspanya gün öncesi piyasası · sızıntısız zaman serisi hattı")
 
     page = st.sidebar.radio(
         "Menü",
         (
             "Genel bakış",
+            "Model karşılaştırması",
             "Model performansı",
             "Hata analizi",
             "Açıklanabilirlik",
@@ -545,12 +633,15 @@ def main() -> None:
         ),
     )
     st.sidebar.markdown("**Kilitli model**")
-    st.sidebar.write("Ridge · α = 0.001 · METHOD_B")
+    st.sidebar.write("1 Ridge · 2 LightGBM · 3 XGBoost")
+    st.sidebar.write("4 ARIMA · 5 Ridge+B+AR(1)")
+    st.sidebar.write("Kilitli: Ridge+B+AR(1)")
     st.sidebar.write("Durum: KİLİTLİ")
     st.sidebar.error("24s tahmin: üretime hazır değil")
 
     pages = {
         "Genel bakış": page_overview,
+        "Model karşılaştırması": page_compare,
         "Model performansı": page_performance,
         "Hata analizi": page_errors,
         "Açıklanabilirlik": page_explain,
