@@ -18,6 +18,20 @@ This study reports **forecasting performance** and **predictive association**. I
 
 ---
 
+## Repository layout
+
+```
+data/raw/          ham CSV (tek kopya)
+data/processed/    birleşik parquet, özellikler, bölmeler, tahminler, kilitli model
+src/               pipeline betikleri
+reports/           aşama raporları, CSV’ler, bitirme şekilleri
+outputs/figures/   SHAP ve 24s şekilleri
+docs/              makale ve bitirme raporu (docx/pdf)
+app.py             salt-okunur Streamlit panosu
+```
+
+---
+
 ## Problem Definition
 
 Estimate the hourly day-ahead market price (`price day ahead`) before delivery hour *t*, using:
@@ -33,12 +47,12 @@ The operational question is whether a leakage-safe model can beat a Naive Lag-24
 
 ## Dataset
 
-Two original CSVs (never overwritten; copies also live under `data/raw/`):
+Two original CSVs under `data/raw/` (never overwritten):
 
 | File | Rows | Content |
 |---|---:|---|
-| `energy_dataset.csv` | 35,064 | Hourly Spanish generation, load, day-ahead forecasts, and prices |
-| `weather_features.csv` | 178,396 | Hourly weather for five Spanish cities |
+| `data/raw/energy_dataset.csv` | 35,064 | Hourly Spanish generation, load, day-ahead forecasts, and prices |
+| `data/raw/weather_features.csv` | 178,396 | Hourly weather for five Spanish cities |
 
 Coverage is hourly UTC from `2014-12-31T23:00:00+00:00` through `2018-12-31T22:00:00+00:00` (35,064 consecutive hours after merge). Target range: 2.06–101.99 €/MWh. `price actual` is present in the energy file and is **never** used as a feature.
 
@@ -236,13 +250,14 @@ python3 -m streamlit run app.py
 
 Pages:
 
-1. Genel bakış — locked KPIs (MAE 4.33, RMSE 6.14, R² 0.639, sMAPE 7.74%, Naive MAE 6.05)
-2. Model performansı — locked test vs naive, actual vs predicted
-3. Hata analizi — hour/month/quantile residuals; bias sign-flip note
-4. Açıklanabilirlik — linear SHAP (development folds)
-5. 24 saatlik tahmin — STRICT empty; assumed labeled not production-ready
-6. Veri ve sızıntı denetimi — split, SAFE/UNKNOWN/FORBIDDEN
-7. Proje bilgisi — pipeline and stage status
+1. Genel bakış — locked KPIs (MAE 3.99, RMSE 5.88, R² 0.669, sMAPE 7.31%, Naive MAE 6.05)
+2. Model karşılaştırması — Ridge, LightGBM, XGBoost, ARIMA, Ridge+B+AR(1)
+3. Model performansı — locked test vs naive, actual vs predicted
+4. Hata analizi — hour/month/quantile residuals; bias sign-flip note
+5. Açıklanabilirlik — linear SHAP (development folds)
+6. 24 saatlik tahmin — STRICT empty; assumed labeled not production-ready
+7. Veri ve sızıntı denetimi — split, SAFE/UNKNOWN/FORBIDDEN
+8. Proje bilgisi — pipeline and stage status
 
 **MODEL STATUS = LOCKED.** Forecast status = **NOT PRODUCTION READY.**
 

@@ -11,7 +11,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
 
-OUT = Path(__file__).resolve().parents[1] / "makale.docx"
+OUT = Path(__file__).resolve().parents[1] / "docs" / "makale.docx"
 NAVY = RGBColor(0x1F, 0x2A, 0x44)
 GRAY = RGBColor(0x44, 0x44, 0x44)
 
@@ -321,6 +321,7 @@ def build() -> None:
         "bilgi yazılmalıdır; model ondan sonra kurulmalıdır."
     )
 
+    OUT.parent.mkdir(parents=True, exist_ok=True)
     d.doc.save(OUT)
     print("wrote", OUT)
 

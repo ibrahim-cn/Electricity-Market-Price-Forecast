@@ -14,8 +14,7 @@ from docx.shared import Cm, Inches, Pt, RGBColor
 
 ROOT = Path(__file__).resolve().parents[1]
 FIG = ROOT / "reports" / "bitirme_figures"
-OUT = ROOT / "reports" / "Bitirme_Projesi_Raporu.docx"
-OUT_ROOT = ROOT / "Bitirme_Projesi_Raporu.docx"
+OUT = ROOT / "docs" / "Bitirme_Projesi_Raporu.docx"
 
 NAVY = RGBColor(0x1F, 0x2A, 0x44)
 BLUE = RGBColor(0x1F, 0x4E, 0x9B)
@@ -371,8 +370,8 @@ class Report:
 
         self.h2("2.1. Veri Seti")
         self.p(
-            "Proje iki ham CSV dosyası üzerine kuruludur. Ham dosyalar değiştirilmemiş; "
-            "işleme kopyaları data/raw/ altında tutulmuştur."
+            "Proje iki ham CSV dosyası üzerine kuruludur. Ham dosyalar "
+            "data/raw/ altında tutulur; üzerine yazılmaz."
         )
         self.table(
             ["Dosya", "Satır", "Kolon", "Rol"],
@@ -850,9 +849,7 @@ def main():
     r.body()
     OUT.parent.mkdir(parents=True, exist_ok=True)
     r.doc.save(str(OUT))
-    r.doc.save(str(OUT_ROOT))
     print("wrote", OUT)
-    print("wrote", OUT_ROOT)
 
 
 if __name__ == "__main__":

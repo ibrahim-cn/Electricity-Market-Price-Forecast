@@ -28,8 +28,6 @@ SPLIT_REPORT = ROOT / "reports" / "features" / "time_series_split.md"
 AUDIT_REPORT = ROOT / "reports" / "features" / "model_readiness_audit.md"
 
 RAW_PROTECTED = (
-    ROOT / "energy_dataset.csv",
-    ROOT / "weather_features.csv",
     ROOT / "data" / "raw" / "energy_dataset.csv",
     ROOT / "data" / "raw" / "weather_features.csv",
 )

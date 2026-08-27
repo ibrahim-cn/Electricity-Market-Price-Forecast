@@ -37,8 +37,6 @@ ENET_ALPHAS = (0.001, 0.01, 0.1, 1.0)
 ENET_L1 = (0.1, 0.5, 0.9)
 
 PROTECTED = (
-    ROOT / "energy_dataset.csv",
-    ROOT / "weather_features.csv",
     ROOT / "data" / "raw" / "energy_dataset.csv",
     ROOT / "data" / "raw" / "weather_features.csv",
     ROOT / "data" / "processed" / "merged" / "merged_energy_weather.parquet",

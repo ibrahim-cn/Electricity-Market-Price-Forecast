@@ -46,8 +46,6 @@ MEAN24_48 = "price_mean_lag24_lag48"
 MEAN24_48_168 = "price_mean_lag24_lag48_lag168"
 
 PROTECTED = (
-    ROOT / "energy_dataset.csv",
-    ROOT / "weather_features.csv",
     ROOT / "data" / "raw" / "energy_dataset.csv",
     ROOT / "data" / "raw" / "weather_features.csv",
     MERGED_PATH,

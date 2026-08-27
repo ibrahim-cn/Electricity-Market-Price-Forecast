@@ -45,8 +45,6 @@ ALPHA_GRID = (0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0)
 QUANTILE_LABELS = ("P25_below", "P25_P50", "P50_P75", "P75_above")
 
 PROTECTED = (
-    ROOT / "energy_dataset.csv",
-    ROOT / "weather_features.csv",
     ROOT / "data" / "raw" / "energy_dataset.csv",
     ROOT / "data" / "raw" / "weather_features.csv",
     MERGED_PATH,

@@ -1,6 +1,6 @@
 """Timezone-aware energy + weather merge pipeline.
 
-Reads copies under data/raw/. Never writes to the original project-root CSVs.
+Reads data/raw/. Never overwrites those CSVs.
 Does not train a model, engineer features, or split train/test.
 """
 
@@ -107,12 +107,8 @@ def setup_directories() -> None:
 
     for name in (ENERGY_RAW_NAME, WEATHER_RAW_NAME):
         dest = RAW_DIR / name
-        src = ROOT / name
-        if dest.exists():
-            continue
-        if not src.exists():
-            raise DataPreparationError(f"Missing raw source file: {src}")
-        dest.write_bytes(src.read_bytes())
+        if not dest.exists():
+            raise DataPreparationError(f"Missing raw source file: {dest}")
 
 
 def load_energy_data(path: Path | None = None) -> pd.DataFrame:
@@ -776,7 +772,7 @@ def write_final_quality_report(df: pd.DataFrame, checks: dict[str, Any], path: P
     feature_cols = [c for c in df.columns if c not in feature_exclude]
     text = f"""# Final Data Quality
 
-Dataset: `data/processed/merged_energy_weather.csv` (+ parquet, üretildiyse).
+Dataset: `data/processed/merged/merged_energy_weather.parquet`.
 
 ## Checks
 
@@ -833,16 +829,9 @@ Aday feature sayısı (referans; feature engineering yapılmadı): {len(feature_
 
 
 def save_processed_data(df: pd.DataFrame) -> dict[str, str]:
-    csv_path = MERGED_DIR / "merged_energy_weather.csv"
     parquet_path = MERGED_DIR / "merged_energy_weather.parquet"
-    df.to_csv(csv_path, index=False)
-    written = {"csv": str(csv_path)}
-    try:
-        df.to_parquet(parquet_path, index=False)
-        written["parquet"] = str(parquet_path)
-    except Exception as exc:  # pragma: no cover - optional engine
-        written["parquet_error"] = str(exc)
-    return written
+    df.to_parquet(parquet_path, index=False)
+    return {"parquet": str(parquet_path)}
 
 
 def run_pipeline() -> dict[str, Any]:
