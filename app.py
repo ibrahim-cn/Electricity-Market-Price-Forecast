@@ -45,10 +45,7 @@ QUANTILE_CSV = ROOT / "reports" / "final" / "final_test_error_by_price_quantile.
 SHAP_IMP = ROOT / "reports" / "explainability" / "shap_feature_importance.csv"
 SHAP_GRP = ROOT / "reports" / "explainability" / "shap_feature_groups.csv"
 SHAP_PNG = ROOT / "outputs" / "figures" / "shap_feature_importance.png"
-FORECAST_STRICT = ROOT / "reports" / "forecasting" / "forecasting_predictions.csv"
-FORECAST_ASSUMED = ROOT / "reports" / "forecasting" / "forecasting_predictions_assumed.csv"
 FORECAST_AUDIT = ROOT / "reports" / "forecasting" / "forecasting_availability_audit.csv"
-FORECAST_FIG = ROOT / "outputs" / "figures" / "forecast_24h.png"
 ENERGY_CSV = ROOT / "data" / "raw" / "energy_dataset.csv"
 
 NAVY = "#1F4E9B"
@@ -184,6 +181,7 @@ footer {visibility: hidden;}
 .pass {background: #eaf6ee; border: 1px solid #b7ddc2; color: #166534; border-radius: 14px; padding: 0.95rem 1.1rem; font-size: 1.4rem; font-weight: 750; text-align: center;}
 .stop {background: #fdecec; border: 1px solid #f0b4b4; color: #9b1c1c; border-radius: 14px; padding: 0.95rem 1.1rem; font-size: 1.35rem; font-weight: 750; text-align: center;}
 .ok {margin: 0.28rem 0; font-size: 1.02rem; color: #1F2A44;}
+.speak {font-size: 1.05rem; color: #334155; line-height: 1.65; margin: 0.65rem 0 1.1rem 0; max-width: 50rem;}
 .tl {display: grid; grid-template-columns: 7fr 1.5fr 1.5fr; gap: 8px; margin: 0.9rem 0 1.1rem 0;}
 .tl div {border-radius: 10px; padding: 0.85rem 0.9rem; color: #fff; font-weight: 650;}
 .tl .a {background: #1F4E9B;}
@@ -194,6 +192,10 @@ footer {visibility: hidden;}
 """,
         unsafe_allow_html=True,
     )
+
+
+def speak(text: str) -> None:
+    st.markdown(f'<p class="speak">{text}</p>', unsafe_allow_html=True)
 
 
 def card(label: str, value: str, *, highlight: bool = False) -> None:
@@ -238,51 +240,57 @@ def bar_chart(df: pd.DataFrame, x: str, y: str, *, highlight: str | None = None,
 
 
 def page_problem() -> None:
-    st.markdown('<div class="kicker">01  ·  Problem</div>', unsafe_allow_html=True)
+    st.markdown('<div class="kicker">01  ·  Problem ve amaç</div>', unsafe_allow_html=True)
     st.markdown('<p class="h1">Elektrik Piyasası Fiyat Tahmini</p>', unsafe_allow_html=True)
     st.markdown(
-        '<p class="sub">İspanya’nın saatlik day-ahead elektrik fiyatını tahmin etmek</p>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        '<p class="lead">Geçmiş piyasa fiyatları, tüketim, üretim, hava durumu ve day-ahead '
-        "tahminlerini kullanarak leakage-safe bir time-series forecasting pipeline geliştirdim.</p>",
+        '<p class="sub">İspanya’nın saatlik gün öncesi elektrik fiyatını tahmin etmek</p>',
         unsafe_allow_html=True,
     )
     st.markdown(
         '<p class="q">Model, sadece dünün aynı saatindeki fiyatı kullanmaktan daha iyi tahmin yapabilir mi?</p>',
         unsafe_allow_html=True,
     )
-    card("Target", "Day-Ahead Market Price (€/MWh)", highlight=True)
+    card("Hedef", "Gün öncesi piyasa fiyatı (€/MWh)", highlight=True)
     a, b, c = st.columns(3)
     with a:
         card("Gözlem", "35.064 saat")
     with b:
         card("Dönem", "2014–2018")
     with c:
-        card("Piyasa", "Spain · Electricity")
+        card("Piyasa", "İspanya elektrik piyasası")
+    speak(
+        "Bu çalışmada İspanya elektrik piyasasının saatlik gün öncesi fiyatını tahmin ettim. "
+        "Karşılaştırma olarak dünün aynı saatindeki fiyatı kullandım. "
+        "Geçmiş fiyat, tüketim, üretim, hava ve gün öncesi tahminlerle sızıntısız bir zaman serisi modeli kurdum "
+        "ve bu basit kopyalamadan daha iyi sonuç alıp almadığıma baktım."
+    )
 
 
 def page_data() -> None:
     st.markdown('<div class="kicker">02  ·  Veri</div>', unsafe_allow_html=True)
     st.markdown('<p class="h2">Model hangi verilerle çalışıyor?</p>', unsafe_allow_html=True)
+    speak(
+        "Enerji piyasası ve hava verisini birleştirdim. "
+        "Sadece gün öncesi ihalenin yapıldığı anda elde olan bilgileri kullandım. "
+        "Aynı saatin gerçekleşen tüketimini ve gerçekleşen fiyatını özellik olarak almadım."
+    )
     a, b, c = st.columns(3)
     with a:
-        card("Energy observations", "35.064")
+        card("Enerji gözlemi", "35.064")
     with b:
-        card("Weather records", "178.396")
+        card("Hava kaydı", "178.396")
     with c:
-        card("Leakage-safe features", "184+")
+        card("Sızıntısız özellik", "184+")
 
     cols = st.columns(5)
     for col, (ico, title) in zip(
         cols,
         (
-            ("⚡", "Generation"),
-            ("🔌", "Load / Consumption"),
-            ("🌤️", "Weather"),
-            ("📈", "Day-ahead Forecasts"),
-            ("💰", "Market Price"),
+            ("⚡", "Üretim"),
+            ("🔌", "Yük / Tüketim"),
+            ("🌤️", "Hava"),
+            ("📈", "Gün öncesi tahmin"),
+            ("💰", "Piyasa fiyatı"),
         ),
     ):
         with col:
@@ -291,9 +299,14 @@ def page_data() -> None:
                 unsafe_allow_html=True,
             )
 
-    st.markdown("**Feature grupları:** Calendar · Historical Price · Load · Generation · Weather · Day-ahead Forecasts · METHOD_B")
-    st.markdown("**Target lags:** t-24 · t-48 · t-168")
-    st.caption("Dün aynı saat, iki gün önce aynı saat, geçen hafta aynı saat. t-1 yok.")
+    st.markdown("**Özellik grupları:** Takvim · Geçmiş fiyat · Yük · Üretim · Hava · Gün öncesi tahmin · METHOD_B")
+    st.markdown("**Hedef gecikmeleri:** t-24 · t-48 · t-168")
+    speak(
+        "Üretim ve yükü arz ile talebi taşıdığı için, havayı rüzgâr ve güneşi etkilediği için, "
+        "resmi gün öncesi tahminleri de operatörün elindeki bilgi olduğu için kullandım. "
+        "Fiyat gecikmesi olarak dünü, iki gün önceyi ve geçen haftanın aynı saatini aldım. "
+        "Bir saat önceki fiyatı kullanmadım, çünkü ihale anında o fiyat henüz yoktu."
+    )
 
     preview = load_energy_preview()
     if preview is None:
@@ -301,40 +314,47 @@ def page_data() -> None:
     else:
         st.dataframe(preview, hide_index=True, use_container_width=True)
 
-    with st.expander("Technical details"):
+    with st.expander("Teknik ayrıntı"):
         st.write("Fit anında METHOD_B ile 3 kolon eklenir (187 model kolonu). `price actual` özellik değildir.")
 
 
 def page_models() -> None:
     st.markdown('<div class="kicker">03  ·  Model seçimi</div>', unsafe_allow_html=True)
     st.markdown('<p class="h2">Hangi modeli seçtim ve neden?</p>', unsafe_allow_html=True)
-    st.caption("Walk-forward MAE · eğitim + doğrulama. Test bu aşamada açılmadı.")
+    speak(
+        "Modelleri test setini açmadan walk-forward ortalama mutlak hata ile karşılaştırdım. "
+        "Düşük çubuk daha iyidir. Naive tabanın yanında Ridge, LightGBM ve XGBoost’u denedim. "
+        "En düşük hatayı Ridge tabanlı birleşik model verdiği için onu seçtim."
+    )
     bar_chart(WF_BARS, "Model", "MAE", highlight="Ridge+B+AR(1)", height=380)
-    st.write(
-        "Tree-based modeller de denendi. Walk-forward sonucunda Ridge tabanlı yaklaşım daha iyi ortalama MAE verdi."
+    st.success("Seçilen model: **Ridge(α = 0.001) + METHOD_B + AR(1)**")
+    st.markdown(
+        """
+**Ridge (α = 0.001):** Ana regresyon modeli olarak kullandım. Çoklu doğrusal bağlantının etkisini azaltarak üretim, tüketim ve hava durumu gibi değişkenlerden fiyat tahmini yaptım.
+
+**METHOD_B:** Ridge’in yakalayamadığı ek yapıyı modellemek için kullandım; tahmini bu bileşenle iyileştirdim.
+
+**AR(1):** Ridge artığındaki bir önceki zaman adımını kullanarak zamansal bağımlılığı yakaladım.
+"""
     )
-    st.success("Final model: **Ridge(α = 0.001) + METHOD_B + AR(1)**")
-    st.write(
-        "**METHOD_B:** yüksek fiyat rejimini leakage-safe sıklık özellikleri ile yakalar. "
-        "**AR(1):** Ridge artığındaki zamansal bağımlılığı 24 saatlik gün-öncesi blokla taşır."
-    )
-    with st.expander("Technical details"):
-        st.write(
-            "ARIMA, ham fiyata kurulan tek değişkenli model değildir. "
-            "Ridge+METHOD_B artığına ARIMA(1,0,0) oturtulmuştur. Walk-forward MAE = 4,53."
-        )
 
 
 def page_result() -> None:
     st.markdown('<div class="kicker">04  ·  Kilitli test</div>', unsafe_allow_html=True)
-    st.markdown('<p class="h2">Final sonuç</p>', unsafe_allow_html=True)
+    st.markdown('<p class="h2">Kilitli sonuç</p>', unsafe_allow_html=True)
+    speak(
+        "Test setini yalnızca bir kez açtım. Seçtiğim modelin ortalama mutlak hatası 3,99 euro, "
+        "Naive tabanınki 6,05 euro çıktı; yani hata yaklaşık yüzde 34 daha düşük. "
+        "Bu grafikte gerçek fiyatlarla tahminimi karşılaştırdım. "
+        "Henüz oluşmamış gelecek saatler için tahmin üretmedim."
+    )
     a, b, c = st.columns([1.25, 1, 1])
     with a:
         card("MAE", f"{LOCKED_MAE:.2f} €/MWh", highlight=True)
     with b:
         card("Naive Lag-24", f"{NAIVE_MAE:.2f} €/MWh")
     with c:
-        card("MAE improvement", "≈ %34")
+        card("MAE iyileşmesi", "≈ %34")
 
     st.markdown(
         f"""
@@ -359,7 +379,7 @@ def page_result() -> None:
         .rename(columns={"y_true": "Gerçek", "y_pred": "Tahmin"})
         .reset_index()
     )
-    st.markdown("**Actual vs Predicted** · kilitli test, günlük ortalama")
+    st.markdown("**Gerçek ve tahmin** · kilitli test, günlük ortalama")
     try:
         import altair as alt
 
@@ -381,24 +401,27 @@ def page_result() -> None:
         st.altair_chart(chart, use_container_width=True)
     except Exception:
         st.line_chart(daily.set_index("timestamp_utc"))
-    st.caption("Model, test döneminde Naive Lag-24 baseline’ından belirgin şekilde daha düşük hata üretti.")
 
 
 def page_errors() -> None:
     st.markdown('<div class="kicker">05  ·  Hata</div>', unsafe_allow_html=True)
     st.markdown('<p class="h2">Model nerede hata yapıyor?</p>', unsafe_allow_html=True)
-    st.caption("Residual = Prediction − Actual. Pozitif = overprediction, negatif = underprediction.")
+    speak(
+        "Artığı tahminden gerçeği çıkararak hesapladım. Pozitif değer aşırı tahmini, negatif değer eksik tahmini gösteriyor. "
+        "Hatanın rastgele dağılmadığını gördüm. Test döneminde model ortalama olarak biraz yüksek tahmin ediyor "
+        "ve yüksek fiyatlı saatlerde sapma devam ediyor. Bu yüzden modeli üretime hazır saymadım."
+    )
 
     pred = load_predictions()
     if pred is None:
         missing(PRED_CANDIDATES[0])
         return
-    st.markdown("**Residual time series** · kilitli test")
+    st.markdown("**Zaman içinde artık** · kilitli test")
     st.line_chart(pred.set_index("timestamp_utc")[["residual"]].rename(columns={"residual": "Artık"}))
 
     left, right = st.columns(2)
     with left:
-        st.markdown("**Residual distribution**")
+        st.markdown("**Artık dağılımı**")
         hist, edges = np.histogram(pred["residual"].dropna(), bins=40)
         hist_df = pd.DataFrame({"bin": 0.5 * (edges[:-1] + edges[1:]), "Sayı": hist})
         st.bar_chart(hist_df.set_index("bin"))
@@ -425,16 +448,21 @@ def page_errors() -> None:
     with h3:
         card("P95+ sapma", f"+{P95_BIAS:.2f}")
 
-    st.warning("High-price regimes remain challenging.")
-    st.info(
-        "Development döneminde yüksek fiyatlarda underprediction gözlendi. "
-        "Frozen test döneminde ise bias pozitife döndü."
+    speak(
+        "Geliştirme döneminde yüksek fiyatlarda eksik tahmin gördüm. "
+        "Kilitli testte sapma tersine döndü ve model biraz yüksek tahmin etmeye başladı. "
+        "Yüksek fiyatlı saatlerdeki hatayı iki dönemde de çözemedim."
     )
 
 
 def page_explain() -> None:
-    st.markdown('<div class="kicker">06  ·  Explainability</div>', unsafe_allow_html=True)
+    st.markdown('<div class="kicker">06  ·  Açıklanabilirlik</div>', unsafe_allow_html=True)
     st.markdown('<p class="h2">Model hangi değişkenlere bakıyor?</p>', unsafe_allow_html=True)
+    speak(
+        "SHAP ile modelin hangi değişkenlere daha çok yaslandığına baktım; bu neden-sonuç kanıtlamaz. "
+        "En güçlü sinyaller olarak geçmiş fiyatları ve gün öncesi resmi tahminleri gördüm. "
+        "Ay ve yılın günü gibi takvim değişkenlerini tek başına fiyat sürücüsü gibi okumadım, çünkü birbirine bağlılar."
+    )
     imp = load_csv(str(SHAP_IMP))
     if imp is None:
         missing(SHAP_IMP)
@@ -470,10 +498,8 @@ def page_explain() -> None:
         st.altair_chart(chart, use_container_width=True)
     except Exception:
         st.bar_chart(show.set_index("Özellik")[["mean_abs_shap"]])
-    st.write("Geçmiş fiyatlar ve day-ahead piyasa tahminleri modelin en güçlü sinyalleri arasında.")
-    st.caption("SHAP modelin tahminini açıklar; nedensellik kanıtlamaz.")
 
-    with st.expander("Technical details"):
+    with st.expander("Teknik ayrıntı"):
         st.write(
             "`month` ve `day_of_year` neredeyse eşdoğrusaldır. Ham |SHAP| sıralamasında üstte görünebilir; "
             "tek tek fiyat sürücüsü gibi okunmamalıdır."
@@ -497,126 +523,77 @@ def page_explain() -> None:
 def page_leakage() -> None:
     st.markdown('<div class="kicker">07  ·  Güven</div>', unsafe_allow_html=True)
     st.markdown('<p class="h2">Bu sonuca güvenebilir miyiz?</p>', unsafe_allow_html=True)
+    speak(
+        "Bu sonuca güvenmek için bilgi sızıntısını kapattım. Veriyi zamana göre böldüm ve satırları karıştırmadım. "
+        "Aynı saatin gerçekleşen değerlerini ve gerçekleşen piyasa fiyatını özellik olarak kullanmadım. "
+        "Modeli walk-forward ile seçtim; test setini ayar için kullanmadım ve yalnızca bir kez ölçtüm."
+    )
     st.markdown(
         """
 <div class="tl">
-  <div class="a">TRAIN<span>%70 · 2014 → 2017</span></div>
-  <div class="b">VALIDATION<span>%15</span></div>
-  <div class="c">TEST<span>%15 · frozen</span></div>
+  <div class="a">EĞİTİM<span>%70 · 2014 → 2017</span></div>
+  <div class="b">DOĞRULAMA<span>%15</span></div>
+  <div class="c">TEST<span>%15 · kilitli</span></div>
 </div>
 """,
         unsafe_allow_html=True,
     )
-    st.markdown('<div class="pass">✓ LEAKAGE AUDIT: PASS</div>', unsafe_allow_html=True)
-    st.markdown('<p class="ok">✓ Chronological split</p>', unsafe_allow_html=True)
-    st.markdown('<p class="ok">✓ No random split / no shuffle</p>', unsafe_allow_html=True)
-    st.markdown('<p class="ok">✓ price actual kullanılmadı</p>', unsafe_allow_html=True)
-    st.markdown('<p class="ok">✓ Same-hour actuals kullanılmadı</p>', unsafe_allow_html=True)
-    st.markdown('<p class="ok">✓ Future information kullanılmadı</p>', unsafe_allow_html=True)
-    st.markdown('<p class="ok">✓ Test set tuning için kullanılmadı</p>', unsafe_allow_html=True)
-    st.markdown('<p class="ok">✓ Walk-forward validation</p>', unsafe_allow_html=True)
-    st.caption("Target lags: t-24 / t-48 / t-168")
+    st.markdown('<div class="pass">✓ Sızıntı denetimi: GEÇTİ</div>', unsafe_allow_html=True)
+    st.markdown('<p class="ok">✓ Kronolojik bölme</p>', unsafe_allow_html=True)
+    st.markdown('<p class="ok">✓ Rastgele bölme / karıştırma yok</p>', unsafe_allow_html=True)
+    st.markdown('<p class="ok">✓ Gerçekleşen piyasa fiyatı kullanılmadı</p>', unsafe_allow_html=True)
+    st.markdown('<p class="ok">✓ Aynı saatteki gerçekleşmeler kullanılmadı</p>', unsafe_allow_html=True)
+    st.markdown('<p class="ok">✓ Gelecek bilgi kullanılmadı</p>', unsafe_allow_html=True)
+    st.markdown('<p class="ok">✓ Test seti ayar için kullanılmadı</p>', unsafe_allow_html=True)
+    st.markdown('<p class="ok">✓ Walk-forward doğrulama</p>', unsafe_allow_html=True)
+    st.caption("Hedef gecikmeleri: t-24 / t-48 / t-168")
 
-    with st.expander("Technical details · SAFE / UNKNOWN / FORBIDDEN"):
-        a, b, c = st.columns(3)
-        with a:
-            card("SAFE", "106")
-        with b:
-            card("UNKNOWN", "6")
-        with c:
-            card("FORBIDDEN", "75")
+    with st.expander("Teknik ayrıntı"):
         audit = load_csv(str(FORECAST_AUDIT))
         if audit is None:
             missing(FORECAST_AUDIT)
         else:
-            cols = [c for c in ("feature", "feature_group", "classification_strict", "notes") if c in audit.columns]
+            cols = [c for c in ("feature", "feature_group", "notes") if c in audit.columns]
             st.dataframe(audit[cols] if cols else audit, hide_index=True, use_container_width=True)
 
 
-def _forecast_table(df: pd.DataFrame) -> pd.DataFrame:
-    out = df.copy()
-    if "timestamp_utc" in out.columns:
-        out["timestamp_utc"] = pd.to_datetime(out["timestamp_utc"], utc=True, errors="coerce")
-        out["Zaman (UTC)"] = out["timestamp_utc"].dt.strftime("%Y-%m-%d %H:%M")
-    if "y_pred" in out.columns:
-        out["Tahmin"] = out["y_pred"].apply(lambda v: "—" if pd.isna(v) else f"{float(v):.2f}")
-    keep = [c for c in ("Zaman (UTC)", "forecast_horizon", "Tahmin", "forecast_origin") if c in out.columns]
-    return out[keep].rename(columns={"forecast_horizon": "Ufuk", "forecast_origin": "Başlangıç"})
-
-
-def page_forecast() -> None:
-    st.markdown('<div class="kicker">08  ·  Operasyon</div>', unsafe_allow_html=True)
-    st.markdown('<p class="h2">24 saatlik forecast</p>', unsafe_allow_html=True)
-    st.markdown('<div class="stop">⚠ PRODUCTION READY: NO</div>', unsafe_allow_html=True)
-    st.write(
-        "Frozen test performansı başarılı olsa da mevcut veri yapısıyla gerçek zamanlı D-1 "
-        "operasyonel tahmin henüz production-ready değildir."
-    )
-    st.markdown(
-        """
-1. Day-ahead forecast publication timestamps dosyada doğrulanmamış.  
-2. Bazı historical actual features forecast origin’de henüz mevcut olmayabilir.  
-3. STRICT path eksik feature’larla tahmin üretmez.
-"""
-    )
-    strict = load_csv(str(FORECAST_STRICT))
-    st.markdown("**STRICT yol**")
-    if strict is None:
-        missing(FORECAST_STRICT)
-    else:
-        st.dataframe(_forecast_table(strict), hide_index=True, use_container_width=True)
-        st.caption("Boş tahminler kasıtlıdır; sistem bilinmeyen bilgileri sessizce doldurmaz.")
-
-    assumed = load_csv(str(FORECAST_ASSUMED))
-    st.markdown("**Varsayımsal senaryo — DEMO ONLY · NOT PRODUCTION READY**")
-    if assumed is None:
-        missing(FORECAST_ASSUMED)
-        return
-    st.dataframe(_forecast_table(assumed), hide_index=True, use_container_width=True)
-    plot = assumed.copy()
-    plot["timestamp_utc"] = pd.to_datetime(plot.get("timestamp_utc"), utc=True, errors="coerce")
-    plot = plot.dropna(subset=["y_pred", "timestamp_utc"])
-    if not plot.empty:
-        st.line_chart(
-            plot.set_index("timestamp_utc")[["y_pred"]].rename(columns={"y_pred": "Demo (üretim değil)"})
-        )
-    if FORECAST_FIG.exists():
-        st.image(str(FORECAST_FIG), caption="Demo figürü — üretim tahmini değildir.")
-
-
 def page_close() -> None:
-    st.markdown('<div class="kicker">09  ·  Kapanış</div>', unsafe_allow_html=True)
+    st.markdown('<div class="kicker">08  ·  Kapanış</div>', unsafe_allow_html=True)
     st.markdown('<p class="h2">Sonuç</p>', unsafe_allow_html=True)
-    st.markdown('<p class="ok">✓ Leakage-safe time-series pipeline</p>', unsafe_allow_html=True)
-    st.markdown('<p class="ok">✓ Chronological split · walk-forward validation</p>', unsafe_allow_html=True)
+    speak(
+        "Sızıntısız bir tahmin hattı kurdum ve dünün aynı saatini kopyalayan Naive tabanı geçtim. "
+        "Model olarak Ridge, METHOD_B ve AR(1) birleşimini seçtim. "
+        "Kilitli testte ortalama mutlak hatayı yaklaşık yüzde 34 düşürdüm. "
+        "Yüksek fiyatlı saatlerdeki hatayı çözemedim; veri 2014–2018 aralığında ve testi tek bir kilitli dönemde ölçtüm."
+    )
+    st.markdown('<p class="ok">✓ Sızıntısız zaman serisi hattı</p>', unsafe_allow_html=True)
+    st.markdown('<p class="ok">✓ Kronolojik bölme · walk-forward doğrulama</p>', unsafe_allow_html=True)
     st.markdown('<p class="ok">✓ Ridge + METHOD_B + AR(1)</p>', unsafe_allow_html=True)
     st.markdown(
         f'<p class="ok">✓ MAE = {LOCKED_MAE:.2f} €/MWh  ·  Naive’e göre ≈ %34</p>',
         unsafe_allow_html=True,
     )
-    st.markdown('<p class="ok">✓ Linear SHAP explainability</p>', unsafe_allow_html=True)
-    st.markdown("### Limitations")
-    st.warning("High-price regime errors remain")
-    st.warning("Dataset historical: 2014–2018 · test tek frozen holdout")
-    st.error("24-hour production forecast not ready")
-    st.caption("Eksik dış sürücüler: yakıt fiyatları, arızalar, sınır ötesi kısıtlar.")
-    st.markdown("### Final Takeaway")
+    st.markdown('<p class="ok">✓ Doğrusal SHAP açıklanabilirliği</p>', unsafe_allow_html=True)
+    st.markdown("### Sınırlılıklar")
+    st.warning("Yüksek fiyatlı saatlerde hata devam ediyor.")
+    st.warning("Veri 2014–2018 aralığındadır ve test tek bir kilitli dönemdir.")
+    st.caption("Yakıt fiyatları, arızalar ve sınır ötesi kısıtlar veri setinde yoktur.")
+    st.markdown("### Özet")
     st.success(
-        "Model, leakage-safe bir zaman serisi yaklaşımıyla Naive Lag-24 baseline’ından "
-        "belirgin şekilde daha iyi day-ahead elektrik fiyat tahmini gerçekleştirdi."
+        "Sızıntısız zaman serisi modeli kurdum ve dünün aynı saatini kopyalayan tabandan "
+        "belirgin şekilde daha iyi gün öncesi elektrik fiyat tahmini aldım."
     )
 
 
 PAGES = (
-    ("🎯 Problem & Amaç", page_problem),
-    ("📊 Veri & Feature Engineering", page_data),
-    ("🤖 Model Karşılaştırması", page_models),
-    ("🏆 Final Sonuç", page_result),
-    ("📉 Hata Analizi", page_errors),
-    ("🔍 Explainability", page_explain),
-    ("🛡️ Leakage & Validation", page_leakage),
-    ("🚀 24 Saatlik Forecast", page_forecast),
-    ("✅ Sonuç & Limitasyonlar", page_close),
+    ("🎯 Problem ve amaç", page_problem),
+    ("📊 Veri ve özellikler", page_data),
+    ("🤖 Model karşılaştırması", page_models),
+    ("🏆 Kilitli sonuç", page_result),
+    ("📉 Hata analizi", page_errors),
+    ("🔍 Açıklanabilirlik", page_explain),
+    ("🛡️ Sızıntı ve doğrulama", page_leakage),
+    ("✅ Sonuç ve sınırlılıklar", page_close),
 )
 
 
@@ -625,10 +602,6 @@ def main() -> None:
     inject_css()
     labels = [p[0] for p in PAGES]
     choice = st.sidebar.radio("Sunum", labels, index=0)
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("**MODEL**  \nLOCKED")
-    st.sidebar.markdown("**TEST**  \nFROZEN")
-    st.sidebar.error("FORECAST  \nNOT PRODUCTION READY")
     dict(PAGES)[choice]()
 
 
